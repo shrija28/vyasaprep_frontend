@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://vyasaprep-backend-n70mo9uqg-vyasaprep.vercel.app/api/:path*"
+      "destination": "https://vyasaprep-backend.vercel.app/api/:path*"
     },
     {
       "source": "/(.*)",
