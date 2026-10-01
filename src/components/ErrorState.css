@@ -1,0 +1,70 @@
+/* ── Error State Styles ────────────────────────────────────────────────── */
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-3xl) var(--spacing-xl);
+  text-align: center;
+  color: var(--color-error);
+  background: rgba(220, 38, 38, 0.04);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: var(--radius-lg);
+  min-height: 300px;
+}
+
+.error-icon {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: var(--spacing-lg);
+}
+
+.error-title {
+  font-size: var(--font-size-h3);
+  font-family: var(--font-display);
+  color: var(--color-error);
+  margin: 0 0 var(--spacing-sm) 0;
+  font-weight: var(--font-weight-semibold);
+}
+
+.error-message {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 400px;
+}
+
+.error-action {
+  margin-top: var(--spacing-lg);
+}
+
+/* ── Variants ──────────────────────────────────────────────────────────── */
+
+.error-state.error-sm {
+  min-height: 200px;
+  padding: var(--spacing-xl) var(--spacing-md);
+}
+
+.error-state.error-lg {
+  min-height: 400px;
+  padding: var(--spacing-3xl);
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .error-state {
+    min-height: 250px;
+    padding: var(--spacing-2xl) var(--spacing-md);
+  }
+
+  .error-icon {
+    font-size: 2.5rem;
+  }
+
+  .error-title {
+    font-size: var(--font-size-h4);
+  }
+}

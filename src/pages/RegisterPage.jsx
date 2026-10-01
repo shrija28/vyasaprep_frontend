@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import { Input, Button, Alert, Card } from '../components';
 
 const RegisterPage = () => {
   const [displayName, setDisplayName] = useState('');
@@ -12,15 +12,18 @@ const RegisterPage = () => {
   
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setLoading(true);
 
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
+      setLoading(false);
       return;
     }
     
@@ -48,137 +51,238 @@ const RegisterPage = () => {
         } else {
           setError(data.message || 'Registration failed. Please try again.');
         }
+        setLoading(false);
         return;
       }
 
-      setSuccess('You have registered successfully. Please sign in to continue.');
+      setSuccess('You have registered successfully. Redirecting to login...');
+      setTimeout(() => {
+        navigate('/login', { state: { registered: true } });
+      }, 1500);
     } catch (err) {
       setError('Network error. Ensure the backend is running.');
+      setLoading(false);
     }
   };
 
   return (
-    <>
-      <div className="bg-mesh"></div>
-      
+    <div style={styles.container}>
+      <main style={styles.main}>
+        <Card variant="elevated" style={styles.card}>
+          <h1 style={styles.title}>Create Account</h1>
+          <p style={styles.subtitle}>Register for VyasaPrep</p>
 
-      <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 60px)', padding: '20px' }}>
-        <div className="section-card register-card" style={{ width: '100%' }}>
-          <h2 style={{ marginBottom: '8px' }}>Create Account</h2>
-          <p className="input-label" style={{ marginBottom: '24px', textTransform: 'none', fontSize: '0.9rem' }}>Register for VyasaPrep</p>
+          {error && <Alert variant="error" style={styles.alert}>{error}</Alert>}
+          {success && <Alert variant="success" style={styles.alert}>{success}</Alert>}
 
-          {error && <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid var(--red)', borderRadius: 'var(--rs)', padding: '10px 14px', marginBottom: '16px', fontSize: '0.85rem', color: 'var(--red-l)' }}>{error}</div>}
-          {success && <div style={{ background: 'rgba(5,150,105,0.1)', border: '1px solid var(--green)', borderRadius: 'var(--rs)', padding: '10px 14px', marginBottom: '16px', fontSize: '0.85rem', color: 'var(--green-l)' }}>{success}</div>}
-
-          <form className="register-form" onSubmit={handleRegister} autoComplete="off">
-            <div className="input-group" style={{ marginBottom: '16px' }}>
-              <label className="input-label" htmlFor="displayName">Display Name</label>
-              <input 
-                className="input-field" 
-                type="text" 
-                id="displayName" 
-                placeholder="Your name" 
-                required 
-                minLength="1" 
-                maxLength="50" 
+          {!success && (
+            <form onSubmit={handleRegister} style={styles.form}>
+              <Input
+                label="Display Name"
+                type="text"
+                placeholder="Your name"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
+                required
               />
-            </div>
-            
-            <div className="input-group" style={{ marginBottom: '16px' }}>
-              <label className="input-label" htmlFor="email">Email</label>
-              <input 
-                className="input-field" 
-                type="email" 
-                id="email" 
-                placeholder="you@example.com" 
-                required 
+
+              <Input
+                label="Email"
+                type="email"
+                placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
               />
-            </div>
 
-            <div className="input-group" style={{ marginBottom: '16px' }}>
-              <label className="input-label" htmlFor="password">Password</label>
-              <input 
-                className="input-field" 
-                type="password" 
-                id="password" 
-                placeholder="Min 8 chars, at least 1 digit" 
-                required 
-                minLength="8" 
+              <Input
+                label="Password"
+                type="password"
+                placeholder="Min 8 chars, at least 1 digit"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
               />
-            </div>
 
-            <div className="input-group" style={{ marginBottom: '24px' }}>
-              <label className="input-label" htmlFor="confirmPassword">Confirm Password</label>
-              <input 
-                className="input-field" 
-                type="password" 
-                id="confirmPassword" 
-                placeholder="Re-enter password" 
-                required 
+              <Input
+                label="Confirm Password"
+                type="password"
+                placeholder="Re-enter password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                required
               />
-            </div>
 
-            <div style={{ marginBottom: '16px' }}>
-              <label className="input-label" style={{ marginBottom: '8px', display: 'block' }}>How are you joining?</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', border: joinType === 'independent' ? '1px solid var(--primary)' : '1px solid var(--border)', borderRadius: 'var(--rs)', cursor: 'pointer', fontSize: '0.85rem', transition: 'border-color 0.15s' }}>
-                  <input 
-                    type="radio" 
-                    name="joinType" 
-                    value="independent" 
-                    checked={joinType === 'independent'} 
-                    onChange={() => setJoinType('independent')}
-                    style={{ margin: 0 }}
-                  /> 
-                  <span>🎓 Personal Student</span>
-                </label>
-                <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', border: joinType === 'via_code' ? '1px solid var(--primary)' : '1px solid var(--border)', borderRadius: 'var(--rs)', cursor: 'pointer', fontSize: '0.85rem', transition: 'border-color 0.15s' }}>
-                  <input 
-                    type="radio" 
-                    name="joinType" 
-                    value="via_code"
-                    checked={joinType === 'via_code'} 
-                    onChange={() => setJoinType('via_code')}
-                    style={{ margin: 0 }}
-                  /> 
-                  <span>🏫 Through Institution</span>
-                </label>
+              {/* Join Type Selector */}
+              <div style={styles.joinTypeSection}>
+                <label style={styles.joinTypeLabel}>How are you joining?</label>
+                <div style={styles.joinTypeOptions}>
+                  <label style={{
+                    ...styles.joinTypeOption,
+                    ...(joinType === 'independent' ? styles.joinTypeOptionActive : {}),
+                  }}>
+                    <input
+                      type="radio"
+                      name="joinType"
+                      value="independent"
+                      checked={joinType === 'independent'}
+                      onChange={() => setJoinType('independent')}
+                      style={styles.joinTypeRadio}
+                    />
+                    <span>🎓 Personal Student</span>
+                  </label>
+                  <label style={{
+                    ...styles.joinTypeOption,
+                    ...(joinType === 'via_code' ? styles.joinTypeOptionActive : {}),
+                  }}>
+                    <input
+                      type="radio"
+                      name="joinType"
+                      value="via_code"
+                      checked={joinType === 'via_code'}
+                      onChange={() => setJoinType('via_code')}
+                      style={styles.joinTypeRadio}
+                    />
+                    <span>🏫 Through Institution</span>
+                  </label>
+                </div>
               </div>
-            </div>            {joinType === 'via_code' && (
-              <div className="input-group" style={{ marginBottom: '24px' }}>
-                <label className="input-label" htmlFor="joinCode">Institution Code</label>
-                <input 
-                  className="input-field" 
-                  type="text" 
-                  id="joinCode" 
-                  placeholder="Enter code (e.g., INST-1234)" 
-                  required 
+
+              {joinType === 'via_code' && (
+                <Input
+                  label="Institution Code"
+                  type="text"
+                  placeholder="Enter code (e.g., INST-1234)"
                   value={joinCode}
                   onChange={(e) => setJoinCode(e.target.value)}
+                  required={joinType === 'via_code'}
                 />
-              </div>
-            )}
+              )}
 
-            <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '8px' }} disabled={!!success}>
-              Create Account
-            </button>
-          </form>
+              <Button
+                type="submit"
+                variant="primary"
+                size="large"
+                disabled={loading || !!success}
+                style={styles.submitBtn}
+              >
+                {loading ? 'Creating Account...' : 'Create Account'}
+              </Button>
+            </form>
+          )}
 
-          <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.85rem', color: 'var(--muted)' }}>
-            Already have an account? <Link to="/login" style={{ color: 'var(--purple-l)', textDecoration: 'none' }}>Log in</Link>
+          <p style={styles.footer}>
+            Already have an account?{' '}
+            <Link to="/login" style={styles.link}>
+              Log in
+            </Link>
           </p>
-        </div>
+        </Card>
       </main>
-    </>
+    </div>
   );
+};
+
+const styles = {
+  container: {
+    width: '100%',
+    backgroundColor: 'var(--color-background)',
+  },
+  main: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 'calc(100vh - 80px)',
+    padding: 'clamp(1rem, 3vw, 2rem)',
+  },
+  card: {
+    maxWidth: '420px',
+    width: '100%',
+    padding: 'clamp(1.5rem, 3vw, 2rem)',
+    backgroundColor: 'var(--color-surface)',
+    border: '1px solid var(--color-border)',
+    borderRadius: '12px',
+    boxShadow: '0 2px 8px rgba(230, 95, 0, 0.04)',
+  },
+  title: {
+    fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+    fontFamily: 'Fraunces, serif',
+    fontWeight: '700',
+    color: 'var(--color-navy)',
+    marginBottom: '0.5rem',
+  },
+  subtitle: {
+    fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+    fontFamily: 'Plus Jakarta Sans, sans-serif',
+    color: 'var(--color-text-secondary)',
+    marginBottom: '1.5rem',
+  },
+  alert: {
+    marginBottom: '1.5rem',
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+    marginBottom: '1.5rem',
+  },
+  joinTypeSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.75rem',
+  },
+  joinTypeLabel: {
+    fontSize: '0.85rem',
+    fontFamily: 'Plus Jakarta Sans, sans-serif',
+    fontWeight: '600',
+    color: 'var(--color-text-primary)',
+  },
+  joinTypeOptions: {
+    display: 'flex',
+    gap: '0.75rem',
+    flexWrap: 'wrap',
+  },
+  joinTypeOption: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '0.75rem',
+    border: '1px solid var(--color-border)',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    fontSize: '0.85rem',
+    fontFamily: 'Plus Jakarta Sans, sans-serif',
+    backgroundColor: '#FFFFFF',
+    minWidth: '0',
+  },
+  joinTypeOptionActive: {
+    backgroundColor: 'var(--color-soft-orange)',
+    borderColor: 'var(--color-primary)',
+    color: 'var(--color-primary)',
+    fontWeight: '600',
+  },
+  joinTypeRadio: {
+    margin: 0,
+    cursor: 'pointer',
+    accentColor: 'var(--color-primary)',
+  },
+  submitBtn: {
+    width: '100%',
+  },
+  footer: {
+    textAlign: 'center',
+    fontSize: '0.9rem',
+    fontFamily: 'Plus Jakarta Sans, sans-serif',
+    color: 'var(--color-text-secondary)',
+  },
+  link: {
+    color: 'var(--color-primary)',
+    textDecoration: 'none',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
 };
 
 export default RegisterPage;

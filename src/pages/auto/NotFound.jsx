@@ -1,88 +1,105 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '../../components';
 
 const NotFound = () => {
   return (
-    <>
-      
-      <style>{`
-    /* Local styles for the 404 page so it does not depend on
-       subscription.css or institution.css. */
-    .nf-wrap {
-      position: relative;
-      z-index: 1;
-      max-width: 560px;
-      margin: 0 auto;
-      padding: 80px 20px 60px;
-      text-align: center;
-    }
-    .nf-code {
-      font-size: 5rem;
-      font-weight: 800;
-      letter-spacing: -2px;
-      line-height: 1;
-      margin-bottom: 12px;
-      background: linear-gradient(135deg, var(--purple-l), var(--cyan-l));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .nf-title {
-      font-size: 1.6rem;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
-    .nf-message {
-      color: var(--muted2);
-      font-size: 1rem;
-      margin-bottom: 28px;
-    }
-    .nf-path {
-      display: inline-block;
-      font-family: 'Consolas', 'Monaco', monospace;
-      font-size: 0.85rem;
-      color: var(--muted);
-      background: var(--s2);
-      border: 1px solid var(--border);
-      border-radius: var(--rs);
-      padding: 6px 12px;
-      margin-bottom: 28px;
-      max-width: 100%;
-      overflow-wrap: break-word;
-      word-break: break-all;
-    }
-    .nf-actions {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-  `}</style>
-      <div dangerouslySetInnerHTML={{ __html: `
-  
-
-  <!-- Navbar -->
-  
-
-  <main class="nf-wrap" role="main">
-    <div class="section-card" style="padding:48px 32px;">
-      <div class="nf-code" aria-hidden="true">404</div>
-      <h1 class="nf-title">Page not found</h1>
-      <p class="nf-message">
-        The page you are looking for does not exist or has been moved.
-      </p>
-      <div class="nf-path" id="nfRequestedPath" aria-label="Requested path"></div>
-      <div class="nf-actions">
-        <a href="/" id="nfHomeLink" class="btn-primary" data-no-router>Go to Home</a>
-        <a href="#" id="nfBackLink" class="btn-outline" data-no-router>Go Back</a>
-      </div>
+    <div style={styles.container}>
+      <main style={styles.main}>
+        <div style={styles.card}>
+          <div style={styles.code}>404</div>
+          <h1 style={styles.title}>Page not found</h1>
+          <p style={styles.message}>
+            The page you are looking for does not exist or has been moved.
+          </p>
+          <div style={styles.path} id="nfRequestedPath" aria-label="Requested path">
+            {window.location.pathname}
+          </div>
+          <div style={styles.actions}>
+            <Button as={Link} to="/" variant="primary" size="large">
+              Go to Home
+            </Button>
+            <Button
+              as="button"
+              variant="outline"
+              size="large"
+              onClick={() => window.history.back()}
+            >
+              Go Back
+            </Button>
+          </div>
+        </div>
+      </main>
     </div>
-  </main>
-
-  
-  
-` }} />
-    </>
   );
+};
+
+const styles = {
+  container: {
+    width: '100%',
+    backgroundColor: 'var(--color-background)',
+  },
+  main: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 'calc(100vh - 80px)',
+    padding: 'var(--spacing-xl)',
+  },
+  card: {
+    maxWidth: '560px',
+    width: '100%',
+    padding: 'var(--spacing-3xl)',
+    backgroundColor: 'var(--color-surface)',
+    borderRadius: 'var(--radius-lg)',
+    border: '1px solid var(--color-border)',
+    textAlign: 'center',
+  },
+  code: {
+    fontSize: 'clamp(3rem, 10vw, 5rem)',
+    fontFamily: 'var(--font-display)',
+    fontWeight: 'var(--font-weight-bold)',
+    letterSpacing: '-2px',
+    lineHeight: 1,
+    marginBottom: 'var(--spacing-lg)',
+    background: `linear-gradient(135deg, var(--color-primary), var(--color-warm-yellow))`,
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+  },
+  title: {
+    fontSize: 'var(--font-size-h2)',
+    fontFamily: 'var(--font-display)',
+    fontWeight: 'var(--font-weight-bold)',
+    color: 'var(--color-navy)',
+    marginBottom: 'var(--spacing-md)',
+  },
+  message: {
+    fontSize: 'var(--font-size-body)',
+    color: 'var(--color-text-secondary)',
+    marginBottom: 'var(--spacing-2xl)',
+    lineHeight: 1.6,
+  },
+  path: {
+    display: 'inline-block',
+    fontFamily: 'var(--font-mono)',
+    fontSize: 'var(--font-size-small)',
+    color: 'var(--color-text-secondary)',
+    backgroundColor: 'var(--color-background)',
+    border: '1px solid var(--color-border)',
+    borderRadius: 'var(--radius-md)',
+    padding: 'var(--spacing-sm) var(--spacing-md)',
+    marginBottom: 'var(--spacing-2xl)',
+    maxWidth: '100%',
+    overflowWrap: 'break-word',
+    wordBreak: 'break-all',
+  },
+  actions: {
+    display: 'flex',
+    gap: 'var(--spacing-lg)',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+  },
 };
 
 export default NotFound;

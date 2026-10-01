@@ -1,4 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz@9..144&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
 :root {
+  /* ── NEW DESIGN COLORS ─────────────────────────────────────────── */
+  /* Primary Brand */
+  --color-primary: #E65F00;
+  --color-primary-hover: #B34A00;
+  --color-navy: #1A365D;
+
+  /* Text & Surfaces */
+  --color-text-primary: #1E293B;
+  --color-text-secondary: #64748B;
+  --color-text-muted: #94A3B8;
+  --color-background: #F7F5F1;
+  --color-surface: #FCFBF8;
+  --color-surface-secondary: #F3F0EA;
+
+  /* Accent Colors */
+  --color-soft-orange: #FFF0E3;
+  --color-light-orange: #FBE1CA;
+  --color-soft-yellow: #FFF6D9;
+  --color-warm-yellow: #F6C453;
+
+  /* Status Colors */
+  --color-success: #059669;
+  --color-success-light: #34D399;
+  --color-warning: #D97706;
+  --color-warning-light: #FBBF24;
+  --color-error: #DC2626;
+  --color-error-light: #F87171;
+  --color-info: #EA580C;
+
+  /* Borders */
+  --color-border: #E2E8F0;
+  --color-border-light: #F1F5F9;
+
+  /* ── TYPOGRAPHY ────────────────────────────────────────────────── */
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+
+  /* Font Sizes */
+  --font-size-display: clamp(2.5rem, 5vw, 3.5rem);
+  --font-size-h1: 2.5rem;
+  --font-size-h2: 2rem;
+  --font-size-h3: 1.5rem;
+  --font-size-h4: 1.25rem;
+  --font-size-body: 1rem;
+  --font-size-small: 0.875rem;
+  --font-size-tiny: 0.75rem;
+
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  /* ── SPACING ───────────────────────────────────────────────────── */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+
+  /* ── RADIUS ────────────────────────────────────────────────────── */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-pill: 9999px;
+
+  /* ── SHADOWS ───────────────────────────────────────────────────── */
+  --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-elevated: 0 12px 24px rgba(0, 0, 0, 0.12);
+
+  /* LEGACY VARS FOR COMPATIBILITY */
   --text: #6b6375;
   --text-h: #08060d;
   --bg: #fff;
@@ -8,18 +86,17 @@
   --accent-bg: rgba(170, 59, 255, 0.1);
   --accent-border: rgba(170, 59, 255, 0.5);
   --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --shadow: rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --sans: var(--font-body);
+  --heading: var(--font-display);
+  --mono: var(--font-mono);
 
-  font: 18px/145% var(--sans);
+  font: 18px/145% var(--font-body);
   letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
+  color-scheme: light;
+  color: var(--color-text-primary);
+  background: var(--color-background);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
-import Navbar from '../components/Navbar'; // We can use a public layout or just Navbar
+import { Input, Button, Alert, Card } from '../components';
 
 const LoginPage = () => {
   const [role, setRole] = useState('student');
@@ -20,15 +20,18 @@ const LoginPage = () => {
     }
     return '';
   });
+  const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     
     if (!email || !password) {
       setError('Please fill in all fields.');
+      setLoading(false);
       return;
     }
 
@@ -69,6 +72,7 @@ const LoginPage = () => {
         } else {
           setError('Invalid credentials. Please try again.');
         }
+        setLoading(false);
         return;
       }
 
@@ -83,105 +87,180 @@ const LoginPage = () => {
       
     } catch (err) {
       setError('Network error. Ensure the backend is running.');
+      setLoading(false);
     }
   };
 
-  const publicLinks = [
-    { to: '/login', label: 'Login' },
-    { to: '/register', label: 'Register' }
-  ];
-
   return (
-    <>
-      <div className="bg-mesh"></div>
-      
-      {/* We can use a simpler Navbar or reuse the main one without role */}
-      
+    <div style={styles.container}>
+      <main style={styles.main}>
+        <Card variant="elevated" style={styles.card}>
+          <h1 style={styles.title}>Welcome Back</h1>
+          <p style={styles.subtitle}>Sign in to your account</p>
 
-      <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 60px)', padding: '20px' }}>
-        <div className="section-card login-card" style={{ width: '100%' }}>
-          <h2 style={{ marginBottom: '4px' }}>Welcome Back</h2>
-          <p className="input-label" style={{ marginBottom: '20px', textTransform: 'none', fontSize: '0.9rem' }}>Sign in to your account</p>
+          {info && <Alert variant="info" style={styles.alert}>{info}</Alert>}
+          {error && <Alert variant="error" style={styles.alert}>{error}</Alert>}
 
-          <div style={{ display: 'flex', gap: '0', border: '1px solid var(--border)', borderRadius: 'var(--rs)', overflow: 'hidden', marginBottom: '24px' }}>
-            <button 
-              className={`role-tab ${role === 'student' ? 'active' : ''}`}
-              style={{ flex: 1, padding: '9px 12px', background: role === 'student' ? 'rgba(124,58,237,0.15)' : 'transparent', border: 'none', color: role === 'student' ? 'var(--purple-l)' : 'var(--muted)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', borderRight: '1px solid var(--border)' }}
-              onClick={() => setRole('student')}
-            >
-              Student
-            </button>
-            <button 
-              className={`role-tab ${role === 'institution' ? 'active' : ''}`}
-              style={{ flex: 1, padding: '9px 12px', background: role === 'institution' ? 'rgba(124,58,237,0.15)' : 'transparent', border: 'none', color: role === 'institution' ? 'var(--purple-l)' : 'var(--muted)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', borderRight: '1px solid var(--border)' }}
-              onClick={() => setRole('institution')}
-            >
-              Institution
-            </button>
-            <button 
-              className={`role-tab ${role === 'admin' ? 'active' : ''}`}
-              style={{ flex: 1, padding: '9px 12px', background: role === 'admin' ? 'rgba(124,58,237,0.15)' : 'transparent', border: 'none', color: role === 'admin' ? 'var(--purple-l)' : 'var(--muted)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}
-              onClick={() => setRole('admin')}
-            >
-              Platform Admin
-            </button>
+          {/* Role Tabs */}
+          <div style={styles.roleTabs}>
+            {[
+              { value: 'student', label: 'Student' },
+              { value: 'institution', label: 'Institution' },
+              { value: 'admin', label: 'Platform Admin' },
+            ].map((r) => (
+              <button
+                key={r.value}
+                type="button"
+                onClick={() => setRole(r.value)}
+                style={{
+                  ...styles.roleTab,
+                  ...(role === r.value ? styles.roleTabActive : {}),
+                }}
+              >
+                {r.label}
+              </button>
+            ))}
           </div>
 
-          {error && <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid var(--red)', borderRadius: 'var(--rs)', padding: '10px 14px', marginBottom: '16px', fontSize: '0.85rem', color: 'var(--red-l)' }}>{error}</div>}
+          <form onSubmit={handleLogin} style={styles.form}>
+            <Input
+              label="Email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
 
-          <form className="login-form" onSubmit={handleLogin}>
-            <div className="input-group">
-              <label className="input-label" htmlFor="email">Email</label>
-              <input 
-                type="email" 
-                id="email" 
-                className="input-field" 
-                placeholder="you@example.com" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required 
-              />
-            </div>
-            
-            <div className="input-group">
-              <label className="input-label" htmlFor="password">Password</label>
-              <input 
-                type="password" 
-                id="password" 
-                className="input-field" 
-                placeholder="••••••••" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required 
-              />
-            </div>
+            <Input
+              label="Password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
 
-            <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '8px' }}>
-              Sign In
-            </button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="large"
+              disabled={loading}
+              style={styles.submitBtn}
+            >
+              {loading ? 'Signing In...' : 'Sign In'}
+            </Button>
           </form>
 
-          <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.85rem', color: 'var(--muted)' }}>
+          <p style={styles.footer}>
             {role === 'institution' ? (
               <>
                 Onboarding your school or college?{' '}
-                <Link to="/institution/register" style={{ color: 'var(--purple-l)', textDecoration: 'none', fontWeight: 600 }}>
+                <Link to="/institution/register" style={styles.link}>
                   Register Institution →
                 </Link>
               </>
             ) : (
               <>
                 Don't have an account?{' '}
-                <Link to="/register" style={{ color: 'var(--purple-l)', textDecoration: 'none' }}>
+                <Link to="/register" style={styles.link}>
                   Register
                 </Link>
               </>
             )}
           </p>
-        </div>
+        </Card>
       </main>
-    </>
+    </div>
   );
+};
+
+const styles = {
+  container: {
+    width: '100%',
+    backgroundColor: 'var(--color-background)',
+  },
+  main: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 'calc(100vh - 80px)',
+    padding: 'clamp(1rem, 3vw, 2rem)',
+  },
+  card: {
+    maxWidth: '420px',
+    width: '100%',
+    padding: 'clamp(1.5rem, 3vw, 2rem)',
+    backgroundColor: 'var(--color-surface)',
+    border: '1px solid var(--color-border)',
+    borderRadius: '12px',
+    boxShadow: '0 2px 8px rgba(230, 95, 0, 0.04)',
+  },
+  title: {
+    fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+    fontFamily: 'Fraunces, serif',
+    fontWeight: '700',
+    color: 'var(--color-navy)',
+    marginBottom: '0.5rem',
+  },
+  subtitle: {
+    fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+    fontFamily: 'Plus Jakarta Sans, sans-serif',
+    color: 'var(--color-text-secondary)',
+    marginBottom: '1.5rem',
+  },
+  alert: {
+    marginBottom: '1.5rem',
+  },
+  roleTabs: {
+    display: 'flex',
+    gap: '0',
+    border: '1px solid var(--color-border)',
+    borderRadius: '8px',
+    overflow: 'hidden',
+    marginBottom: '1.5rem',
+    backgroundColor: '#FFFFFF',
+  },
+  roleTab: {
+    flex: 1,
+    padding: '0.75rem',
+    border: 'none',
+    backgroundColor: 'transparent',
+    color: 'var(--color-text-secondary)',
+    fontSize: '0.85rem',
+    fontFamily: 'Plus Jakarta Sans, sans-serif',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    borderRight: '1px solid var(--color-border)',
+  },
+  roleTabActive: {
+    backgroundColor: 'var(--color-soft-orange)',
+    color: 'var(--color-primary)',
+    borderRight: '1px solid var(--color-border)',
+    fontWeight: '700',
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+    marginBottom: '1.5rem',
+  },
+  submitBtn: {
+    width: '100%',
+  },
+  footer: {
+    textAlign: 'center',
+    fontSize: '0.9rem',
+    fontFamily: 'Plus Jakarta Sans, sans-serif',
+    color: 'var(--color-text-secondary)',
+  },
+  link: {
+    color: 'var(--color-primary)',
+    textDecoration: 'none',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
 };
 
 export default LoginPage;

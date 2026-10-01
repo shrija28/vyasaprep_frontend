@@ -1,44 +1,170 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Card, Input, Button, Alert } from '../components';
 
 const ContactUsPage = () => {
-  return (
-    <>
-      <div className="bg-mesh"></div>
-      
-      {/* Navbar (Public view, since anyone can contact) */}
-      
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [feedback, setFeedback] = useState({ type: '', text: '' });
 
-      <main className="contact-container" style={{ maxWidth: '900px', margin: '0 auto', padding: '40px 20px' }}>
-        <div className="contact-header" style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '10px' }}>Contact Us</h1>
-          <p style={{ fontSize: '1rem', color: 'var(--muted)', maxWidth: '500px', margin: '0 auto' }}>
-            We'd love to hear from you. Please fill out this form or reach out via email.
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFeedback({ type: '', text: '' });
+
+    if (!name || !email || !message) {
+      setFeedback({ type: 'error', text: 'Please fill in all fields.' });
+      return;
+    }
+
+    setLoading(true);
+
+    // Placeholder for future backend integration
+    setTimeout(() => {
+      setFeedback({
+        type: 'success',
+        text: 'Thank you for your message. We will get back to you soon.'
+      });
+      setName('');
+      setEmail('');
+      setMessage('');
+      setLoading(false);
+    }, 1500);
+  };
+
+  const styles = {
+    container: {
+      width: '100%',
+      backgroundColor: 'var(--color-background)',
+      minHeight: 'calc(100vh - 80px)',
+      padding: 'clamp(2rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem)',
+    },
+    wrapper: {
+      maxWidth: '700px',
+      margin: '0 auto',
+    },
+    header: {
+      textAlign: 'center',
+      marginBottom: '3rem',
+    },
+    title: {
+      fontFamily: 'Fraunces, serif',
+      fontSize: 'clamp(1.75rem, 4vw, 2.5rem)',
+      fontWeight: '700',
+      color: 'var(--color-navy)',
+      marginBottom: '0.75rem',
+    },
+    subtitle: {
+      fontFamily: 'Plus Jakarta Sans, sans-serif',
+      fontSize: 'clamp(0.95rem, 2vw, 1.1rem)',
+      color: 'var(--color-text-secondary)',
+      lineHeight: '1.6',
+      maxWidth: '600px',
+      margin: '0 auto',
+    },
+    card: {
+      padding: 'clamp(1.5rem, 3vw, 2.5rem)',
+      backgroundColor: 'var(--color-surface)',
+      border: '1px solid var(--color-border)',
+      borderRadius: '12px',
+      boxShadow: '0 2px 8px rgba(230, 95, 0, 0.04)',
+    },
+    form: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1.25rem',
+    },
+    textarea: {
+      width: '100%',
+      padding: '0.75rem',
+      fontFamily: 'Plus Jakarta Sans, sans-serif',
+      fontSize: '0.95rem',
+      border: '1px solid var(--color-border)',
+      borderRadius: '8px',
+      backgroundColor: '#FFFFFF',
+      color: 'var(--color-text-primary)',
+      resize: 'vertical',
+      minHeight: '150px',
+      boxSizing: 'border-box',
+      outline: 'none',
+      transition: 'all 0.2s ease',
+    },
+    textareaFocus: {
+      borderColor: 'var(--color-primary)',
+      boxShadow: '0 0 0 3px rgba(230, 95, 0, 0.1)',
+    },
+    alert: {
+      marginBottom: '1rem',
+    },
+  };
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.wrapper}>
+        <div style={styles.header}>
+          <h1 style={styles.title}>Get In Touch</h1>
+          <p style={styles.subtitle}>
+            Have a question or feedback? We'd love to hear from you. Fill out the form below and we'll get back to you as soon as possible.
           </p>
         </div>
 
-        <div className="section-card" style={{ padding: '32px' }}>
-          <form onSubmit={(e) => e.preventDefault()}>
-            <div className="input-group" style={{ marginBottom: '16px' }}>
-              <label className="input-label" htmlFor="name">Name</label>
-              <input type="text" id="name" className="input-field" placeholder="Your name" required />
+        <Card style={styles.card}>
+          {feedback.text && (
+            <Alert variant={feedback.type} style={styles.alert}>
+              {feedback.text}
+            </Alert>
+          )}
+
+          <form onSubmit={handleSubmit} style={styles.form}>
+            <Input
+              label="Your Name"
+              type="text"
+              placeholder="John Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+
+            <Input
+              label="Email Address"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+
+            <div>
+              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--color-text-primary)', display: 'block', marginBottom: '0.5rem' }}>
+                Message
+              </label>
+              <textarea
+                style={styles.textarea}
+                placeholder="Tell us how we can help..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onFocus={(e) => Object.assign(e.target.style, styles.textareaFocus)}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'var(--color-border)';
+                  e.target.style.boxShadow = 'none';
+                }}
+                required
+              />
             </div>
 
-            <div className="input-group" style={{ marginBottom: '16px' }}>
-              <label className="input-label" htmlFor="email">Email</label>
-              <input type="email" id="email" className="input-field" placeholder="Your email address" required />
-            </div>
-
-            <div className="input-group" style={{ marginBottom: '24px' }}>
-              <label className="input-label" htmlFor="message">Message</label>
-              <textarea id="message" className="input-field" rows="5" placeholder="How can we help you?" required></textarea>
-            </div>
-
-            <button type="submit" className="btn-primary" style={{ width: '100%' }}>Send Message</button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              disabled={loading}
+              style={{ width: '100%' }}
+            >
+              {loading ? 'Sending...' : 'Send Message'}
+            </Button>
           </form>
-        </div>
-      </main>
-    </>
+        </Card>
+      </div>
+    </div>
   );
 };
 

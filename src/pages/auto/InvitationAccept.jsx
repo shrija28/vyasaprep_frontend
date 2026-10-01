@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Button, Alert, Card } from '../../components';
 
 const InvitationAccept = () => {
   const [searchParams] = useSearchParams();
@@ -29,7 +30,6 @@ const InvitationAccept = () => {
           const data = await res.json();
           setInvitationData(data);
         } else {
-          // Fallback info if verification endpoint is simple or token is embedded
           setInvitationData({
             institution_name: 'Partner Institution',
             invite_code: inviteCode
@@ -76,83 +76,155 @@ const InvitationAccept = () => {
   };
 
   return (
-    <>
-      <div className="bg-mesh"></div>
-
-      <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 60px)', padding: '20px' }}>
-        <section className="section-card" style={{ maxWidth: '520px', width: '100%', padding: '32px' }}>
-          <h1 id="invitationTitle" style={{ marginBottom: '8px' }}>Institution Invitation</h1>
-          <p className="input-label" style={{ marginBottom: '24px', textTransform: 'none', fontSize: '0.9rem' }}>
+    <div style={styles.container}>
+      <main style={styles.main}>
+        <Card variant="elevated" style={styles.card}>
+          <h1 style={styles.title}>Institution Invitation</h1>
+          <p style={styles.subtitle}>
             Review the invitation details below and choose to accept or decline.
           </p>
 
-          {error && (
-            <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid var(--red)', borderRadius: 'var(--rs)', padding: '10px 14px', marginBottom: '16px', fontSize: '0.85rem', color: 'var(--red-l)' }}>
-              {error}
-            </div>
-          )}
-
+          {error && <Alert variant="error" style={styles.alert}>{error}</Alert>}
           {success && (
-            <div style={{ background: 'rgba(5,150,105,0.1)', border: '1px solid var(--green)', borderRadius: 'var(--rs)', padding: '10px 14px', marginBottom: '16px', fontSize: '0.85rem', color: 'var(--green-l)' }}>
+            <Alert variant="success" style={styles.alert}>
               Invitation accepted successfully! Redirecting to institution portal…
-            </div>
+            </Alert>
           )}
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--muted)', fontSize: '0.9rem' }}>
-              Loading invitation details…
-            </div>
+            <div style={styles.loading}>Loading invitation details…</div>
           ) : (
-            <section id="invitationDetails">
-              <div className="input-group" style={{ marginBottom: '16px' }}>
-                <span className="input-label">Institution</span>
-                <p style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--text)', margin: '0' }}>
+            <div style={styles.details}>
+              <div style={styles.detailGroup}>
+                <span style={styles.detailLabel}>Institution</span>
+                <p style={styles.detailValue}>
                   {invitationData?.institution_name || 'VyasaPrep Institution'}
                 </p>
               </div>
 
               {inviteCode && (
-                <div className="input-group" style={{ marginBottom: '16px' }}>
-                  <span className="input-label">Invite Code</span>
-                  <p style={{ fontSize: '0.95rem', color: 'var(--purple-l)', fontWeight: 600, margin: '0' }}>
+                <div style={styles.detailGroup}>
+                  <span style={styles.detailLabel}>Invite Code</span>
+                  <p style={styles.detailValue}>
                     {inviteCode}
                   </p>
                 </div>
               )}
 
-              <div className="input-group" style={{ marginBottom: '24px' }}>
-                <span className="input-label">What You'll Get</span>
-                <ul style={{ margin: '8px 0 0', paddingLeft: '20px', color: 'var(--text)', fontSize: '0.9rem', lineHeight: '1.6' }}>
+              <div style={styles.detailGroup}>
+                <span style={styles.detailLabel}>What You'll Get</span>
+                <ul style={styles.benefitsList}>
                   <li>Access to your institution's curated exams</li>
                   <li>Personalized analytics and batch rankings</li>
                   <li>Full access to your institution's prep portal</li>
                 </ul>
               </div>
 
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                <button
+              <div style={styles.actions}>
+                <Button
                   type="button"
-                  className="btn-primary"
+                  variant="primary"
+                  size="large"
                   onClick={handleAccept}
                   disabled={submitting || success}
-                  style={{ flex: '1', minWidth: '140px', justifyContent: 'center' }}
+                  style={styles.actionButton}
                 >
                   {submitting ? 'Accepting…' : 'Accept Invitation'}
-                </button>
-                <Link
+                </Button>
+                <Button
+                  as={Link}
                   to="/"
-                  className="btn-outline"
-                  style={{ flex: '1', minWidth: '140px', justifyContent: 'center', textAlign: 'center', textDecoration: 'none' }}
+                  variant="outline"
+                  size="large"
+                  style={styles.actionButton}
                 >
                   Decline
-                </Link>
+                </Button>
               </div>
-            </section>
+            </div>
           )}
-        </section>
+        </Card>
       </main>
-    </>
+    </div>
   );
+};
+
+const styles = {
+  container: {
+    width: '100%',
+    backgroundColor: 'var(--color-background)',
+  },
+  main: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 'calc(100vh - 80px)',
+    padding: 'var(--spacing-xl)',
+  },
+  card: {
+    maxWidth: '520px',
+    width: '100%',
+    padding: 'var(--spacing-2xl)',
+  },
+  title: {
+    fontSize: 'var(--font-size-h2)',
+    fontFamily: 'var(--font-display)',
+    fontWeight: 'var(--font-weight-bold)',
+    color: 'var(--color-navy)',
+    marginBottom: 'var(--spacing-sm)',
+  },
+  subtitle: {
+    fontSize: 'var(--font-size-body)',
+    color: 'var(--color-text-secondary)',
+    marginBottom: 'var(--spacing-xl)',
+  },
+  alert: {
+    marginBottom: 'var(--spacing-xl)',
+  },
+  loading: {
+    textAlign: 'center',
+    padding: 'var(--spacing-2xl) 0',
+    color: 'var(--color-text-secondary)',
+    fontSize: 'var(--font-size-body)',
+  },
+  details: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 'var(--spacing-xl)',
+  },
+  detailGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 'var(--spacing-sm)',
+  },
+  detailLabel: {
+    fontSize: 'var(--font-size-small)',
+    fontWeight: 'var(--font-weight-semibold)',
+    color: 'var(--color-text-secondary)',
+    textTransform: 'uppercase',
+  },
+  detailValue: {
+    fontSize: 'var(--font-size-h4)',
+    fontWeight: 'var(--font-weight-bold)',
+    color: 'var(--color-navy)',
+    margin: 0,
+  },
+  benefitsList: {
+    margin: 0,
+    paddingLeft: 'var(--spacing-xl)',
+    color: 'var(--color-text-primary)',
+    fontSize: 'var(--font-size-body)',
+    lineHeight: 1.6,
+  },
+  actions: {
+    display: 'flex',
+    gap: 'var(--spacing-lg)',
+    flexWrap: 'wrap',
+  },
+  actionButton: {
+    flex: 1,
+    minWidth: '140px',
+  },
 };
 
 export default InvitationAccept;
