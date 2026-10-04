@@ -74,7 +74,7 @@ const InstitutionRegister = () => {
       setTimeout(() => {
         navigate('/login', { state: { registered: true, role: 'institution' } });
       }, 1500);
-    } catch (err) {
+    } catch {
       setError('Network error. Please make sure the server is reachable.');
       setLoading(false);
     }
@@ -183,12 +183,13 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 'calc(100vh - 80px)',
-    padding: 'var(--spacing-xl)',
+    padding: 'clamp(1rem, 4vw, 3rem)',
   },
   card: {
-    maxWidth: '440px',
+    maxWidth: '560px',
     width: '100%',
-    padding: 'var(--spacing-2xl)',
+    boxSizing: 'border-box',
+    padding: 'clamp(1.25rem, 4vw, 2.5rem)',
   },
   title: {
     fontSize: 'var(--font-size-h2)',
@@ -201,6 +202,8 @@ const styles = {
     fontSize: 'var(--font-size-body)',
     color: 'var(--color-text-secondary)',
     marginBottom: 'var(--spacing-xl)',
+    lineHeight: 1.55,
+    overflowWrap: 'anywhere',
   },
   alert: {
     marginBottom: 'var(--spacing-lg)',

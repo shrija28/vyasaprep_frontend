@@ -1,5 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import AdminPageHeader from '../../components/AdminPageHeader';
+import { TrashIcon } from '../../components/icons';
+import { clearAdminCache } from '../../utils/adminCache';
 
 const AdminUpload = () => {
   const [files, setFiles] = useState([]);
@@ -10,6 +13,8 @@ const AdminUpload = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [generatedSets, setGeneratedSets] = useState([]);
   const [storedCount, setStoredCount] = useState(0);
+  const [previewQuestions, setPreviewQuestions] = useState([]);
+  const [saveStatus, setSaveStatus] = useState('idle');
   const fileInputRef = useRef(null);
 
   const [subject, setSubject] = useState("");
@@ -28,29 +33,31 @@ const AdminUpload = () => {
 
   const handleFileChange = (e) => {
     if (e.target.files) {
-      setFiles([...files, ...Array.from(e.target.files)]);
+      setFiles((prev) => [...prev, ...Array.from(e.target.files)]);
     }
   };
 
   const removeFile = (index) => {
-    setFiles(files.filter((_, i) => i !== index));
+    setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleUpload = async () => {
+  const handleUpload = async (saveMode = false) => {
     if (!files.length) return;
     if (!subject) {
-      setErrorMessage("Please select a subject first.");
+      setErrorMessage('Please select a subject first.');
       return;
     }
 
     setUploadStatus('uploading');
+    setSaveStatus('idle');
     setErrorMessage('');
-    setUploadMessage('Uploading and extracting content into RAG question bank...');
+    setUploadMessage(saveMode ? 'Saving validated extracted questions into the platform bank...' : 'Uploading and extracting content for preview...');
 
     try {
       const formData = new FormData();
       formData.append('subject', subject);
       formData.append('file_type', docType);
+      formData.append('preview_only', String(!saveMode));
       files.forEach((f) => {
         formData.append('files', f);
       });
@@ -68,16 +75,37 @@ const AdminUpload = () => {
         return;
       }
 
+      const extracted = Array.isArray(data.preview_questions) ? data.preview_questions : [];
+      if (saveMode) {
+        const savedCount = Number(data.questions_extracted || extracted.length || 0);
+        clearAdminCache();
+        setUploadStatus('done');
+        setSaveStatus('done');
+        setStoredCount(savedCount);
+        setUploadMessage(`Saved ${savedCount} validated questions to the platform question bank for ${subject}.`);
+        setPreviewQuestions([]);
+        return;
+      }
+
+      setPreviewQuestions(extracted);
       setUploadStatus('done');
-      const filesCount = data.indexed_files || files.length;
-      const chunksCount = data.total_chunks || 0;
-      const qCount = data.questions_extracted || 0;
-      setUploadMessage(`✓ Successfully indexed ${filesCount} file(s) (${chunksCount} chunks, ${qCount} questions extracted) for ${subject}!`);
+      setUploadMessage(`Extracted ${data.questions_extracted || extracted.length || 0} validated question(s) for ${subject}. Review and save to the platform bank.`);
+      if (!extracted.length) {
+        setErrorMessage('No valid MCQs were extracted from the uploaded file(s). Please check the file content and try again.');
+      }
     } catch (err) {
       console.error(err);
       setUploadStatus('idle');
       setErrorMessage('Network error occurred while uploading. Please verify the /api/admin/upload endpoint and try again.');
     }
+  };
+
+  const handleSavePreview = async () => {
+    if (!previewQuestions.length) {
+      setErrorMessage('There are no extracted questions to save yet.');
+      return;
+    }
+    await handleUpload(true);
   };
 
   const handleGenerate = async () => {
@@ -155,6 +183,10 @@ const AdminUpload = () => {
       ` }} />
       <div className="bg-mesh"></div>
       <main className="main-wrap admin-upload-wrap">
+        <AdminPageHeader
+          title="Content Upload"
+          description="Upload learning materials and question papers for the platform question bank."
+        />
         
         <div className="section-card" id="uploadCard">
           <div className="section-card-header">
@@ -251,8 +283,16 @@ const AdminUpload = () => {
               <div className="file-grid" style={{ marginTop: '16px' }}>
                 {files.map((file, idx) => (
                   <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px', marginBottom: '8px', background: 'var(--card-bg)' }}>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>📄 {file.name}</span>
-                    <button type="button" onClick={(e) => { e.stopPropagation(); removeFile(idx); }} style={{ color: 'var(--red)', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>{file.name}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); removeFile(idx); }}
+                      aria-label={`Remove ${file.name}`}
+                      title={`Remove ${file.name}`}
+                      style={{ color: 'var(--red)', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
+                    >
+                      <TrashIcon size={18} />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -264,16 +304,55 @@ const AdminUpload = () => {
                 <div className="upload-bar"><div className="upload-bar-fill" style={{ width: `${Math.min(files.length * 20, 100)}%` }}></div></div>
               </div>
               {files.length >= 1 && uploadStatus === 'idle' && (
-                <button className="btn-primary" onClick={handleUpload}>
+                <button className="btn-primary" onClick={() => handleUpload(false)}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                   Upload &amp; Extract
                 </button>
               )}
-              {uploadStatus === 'uploading' && <span style={{ color: 'var(--blue)', fontWeight: 600 }}>⏳ {uploadMessage}</span>}
+              {uploadStatus === 'uploading' && <span style={{ color: 'var(--blue)', fontWeight: 600 }}>{uploadMessage}</span>}
               {uploadStatus === 'done' && <span style={{ color: 'var(--green)', fontWeight: 600 }}>{uploadMessage}</span>}
             </div>
           </div>
         </div>
+
+        {uploadStatus === 'done' && previewQuestions.length > 0 && (
+          <div className="section-card" id="extractPreviewCard">
+            <div className="section-card-header">
+              <div className="section-icon purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 1"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              </div>
+              <div>
+                <h2><span className="step-num">02</span> Extracted Question Preview</h2>
+                <p className="section-sub">Review the validated questions before saving them to the platform bank. Only valid MCQs with institution_id = NULL are kept.</p>
+              </div>
+            </div>
+            <div className="section-body">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                <span style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{previewQuestions.length} questions ready to save</span>
+                <button className="btn-primary" onClick={handleSavePreview}>
+                  Save to Platform Bank
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {previewQuestions.map((item, index) => (
+                  <div key={`${item.q}-${index}`} style={{ padding: '16px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--card-bg)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '8px' }}>
+                      <strong style={{ color: 'var(--text)' }}>Q{index + 1}. {item.q}</strong>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{item.topic || subject}</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '8px' }}>
+                      {Array.isArray(item.opts) && item.opts.map((opt, optIndex) => (
+                        <div key={`${item.q}-${optIndex}`} style={{ padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: optIndex === Number(item.ans) ? 'rgba(16, 185, 129, 0.08)' : 'rgba(15, 23, 42, 0.02)' }}>
+                          <strong style={{ marginRight: '6px' }}>{String.fromCharCode(65 + optIndex)}.</strong>{opt}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {(uploadStatus === 'done' || subject) && (
           <div className="section-card generate-card" id="generateCard">
@@ -302,7 +381,7 @@ const AdminUpload = () => {
               {generateStatus === 'generating' && (
                 <div className="gen-progress" style={{ display: 'block', padding: '16px' }}>
                   <p className="gen-bar-label" style={{ textAlign: 'center', fontWeight: 600, color: 'var(--blue)' }}>
-                    🔄 Querying RAG question bank and partitioning 240 unique {subject} questions across Sets A, B, C, D...
+                    Querying the question bank and partitioning 240 unique {subject} questions across Sets A, B, C, and D...
                   </p>
                 </div>
               )}
@@ -326,20 +405,20 @@ const AdminUpload = () => {
             }}>
               <div>
                 <span style={{ fontWeight: 700, color: '#059669', fontSize: '0.98rem' }}>
-                  ✓ {storedCount || generatedSets[0]?.length || 60} fresh {subject} questions stored in Question Bank!
+                   {storedCount || generatedSets[0]?.length || 60} fresh {subject} questions stored in Question Bank!
                 </span>
                 <p style={{ margin: '4px 0 0 0', fontSize: '0.86rem', color: 'var(--muted)', lineHeight: 1.4 }}>
                   The questions are now saved in your Question Bank. 4 paper sets ({generatedSets[0]?.length || 60} Qs each) are generated below. To create an exam using these questions, go to the <strong>Exams</strong> tab.
                 </p>
               </div>
               <Link to="/admin/exams" className="btn-primary" style={{ textDecoration: 'none', padding: '8px 18px', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>
-                Go to Exams →
+                Go to Exams
               </Link>
             </div>
 
             <div className="output-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div>
-                <h2 className="output-title">📋 4 Generated {subject} Paper Sets ({generatedSets[0]?.length || 60} Qs per Set)</h2>
+                <h2 className="output-title">4 Generated {subject} Paper Sets ({generatedSets[0]?.length || 60} Qs per Set)</h2>
               </div>
               <div className="output-header-actions">
                 <span style={{ fontSize: '0.88rem', color: 'var(--muted)', background: 'var(--card-bg)', padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border)' }}>
@@ -411,7 +490,7 @@ const AdminUpload = () => {
 
                       {item.exp && (
                         <div style={{ marginTop: '10px', fontSize: '0.8rem', color: 'var(--muted)', fontStyle: 'italic' }}>
-                          💡 <strong>Explanation:</strong> {item.exp}
+                          <strong>Explanation:</strong> {item.exp}
                         </div>
                       )}
                     </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import AdminPageHeader from '../../components/AdminPageHeader';
 
 const AdminStudentManage = () => {
   const [searchParams] = useSearchParams();
@@ -58,7 +59,7 @@ const AdminStudentManage = () => {
     .form-group input:focus,
     .form-group select:focus {
       outline: none;
-      border-color: var(--purple-l, #a78bfa);
+      border-color: var(--color-primary);
       background: var(--s3);
     }
     
@@ -188,16 +189,21 @@ const AdminStudentManage = () => {
   <div className="main-wrap admin-student-manage-wrap" style={{"maxWidth":"100%","padding":"24px 28px 80px"}}>
 
     
-    <div style={{"display":"flex","alignItems":"center","justifyContent":"space-between","marginBottom":"20px"}}>
-      <div>
-        <h1 style={{"fontSize":"1.6rem","fontWeight":"800","margin":"0 0 3px"}} id="pageTitle">Manage Student</h1>
-        <p style={{"color":"var(--muted)","margin":"0","fontSize":"0.82rem"}} id="pageSubtitle">View and manage student details. Subscription/payment features are currently inactive / future feature.</p>
-      </div>
-    </div>
+    <AdminPageHeader
+      title="Manage Student"
+      titleId="pageTitle"
+      description="View and manage student details. Subscription/payment features are currently inactive / future feature."
+      descriptionId="pageSubtitle"
+    />
 
     
     {!isCreateMode && <div id="loadingState" style={{"textAlign":"center","padding":"60px 20px","color":"var(--muted)"}}>
-      <div style={{"fontSize":"3rem","marginBottom":"12px","opacity":"0.5"}}>👤</div>
+      <div style={{"fontSize":"3rem","marginBottom":"12px","opacity":"0.5","display":"flex","alignItems":"center","justifyContent":"center"}}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" style={{ width: '3rem', height: '3rem' }}>
+          <path d="M20 21a8 8 0 10-16 0" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      </div>
       <div style={{"fontSize":"1.1rem","fontWeight":"600","marginBottom":"6px","color":"#0f172a"}}>Select a student to manage</div>
       <div style={{ fontSize: '0.88rem', marginBottom: '16px' }}>No student identifier was supplied. Use the Students page to review records.</div>
       <Link to="/admin/students" className="btn-outline">Back to Students</Link>
@@ -236,7 +242,7 @@ const AdminStudentManage = () => {
           <h3>Password & Security</h3>
           <div style={{"display":"flex","flexDirection":"column","gap":"12px"}}>
             <div style={{"background":"rgba(37,99,235,0.1)","border":"1px solid rgba(37,99,235,0.2)","borderRadius":"var(--rs)","padding":"14px"}}>
-              <div style={{"fontWeight":"600","color":"var(--blue-l,#60a5fa)","marginBottom":"8px"}}>🔐 Password Management</div>
+              <div style={{"fontWeight":"600","color":"var(--blue-l,#60a5fa)","marginBottom":"8px"}}>Password Management</div>
               <p style={{"fontSize":"0.85rem","color":"var(--muted)","margin":"0","lineHeight":"1.5"}}>
                 Passwords are securely hashed in the database and cannot be viewed. 
                 Use the "Reset Password" button below to set a new password for this student if they forgot theirs.
@@ -244,7 +250,7 @@ const AdminStudentManage = () => {
             </div>
             
             <div id="resetPasswordSection" style={{"display":"none","border":"1px solid rgba(220,38,38,0.2)","borderRadius":"var(--rs)","padding":"14px","background":"rgba(220,38,38,0.05)"}}>
-              <div style={{"fontWeight":"600","color":"var(--red-l)","marginBottom":"12px"}}>⚠️ Set New Password</div>
+              <div style={{"fontWeight":"600","color":"var(--red-l)","marginBottom":"12px"}}>Warning  Set New Password</div>
               <div className="form-group" style={{"marginBottom":"12px"}}>
                 <label htmlFor="newPassword">New Password *</label>
                 <input type="password" id="newPassword" placeholder="Enter new password" style={{"width":"100%","padding":"10px 14px","border":"1px solid var(--border)","borderRadius":"var(--rs)","background":"var(--s2)","color":"var(--text)"}}/>

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
+import { EyeIcon, EyeOffIcon } from './index';
 import './Input.css';
 
 /**
@@ -25,7 +26,8 @@ const Input = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
-  const inputId = id || `input-${Math.random()}`;
+  const generatedId = useId();
+  const inputId = id || generatedId;
   const isTextarea = type === 'textarea';
   const displayType = type === 'password' && showPassword ? 'text' : type;
 
@@ -74,9 +76,11 @@ const Input = ({
             type="button"
             className="input-icon-right input-password-toggle"
             onClick={() => setShowPassword(!showPassword)}
-            tabIndex="-1"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            aria-pressed={showPassword}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-secondary)' }}
           >
-            {showPassword ? '🙈' : '👁️'}
+            {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
           </button>
         )}
       </div>

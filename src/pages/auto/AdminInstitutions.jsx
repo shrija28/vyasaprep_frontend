@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdminCache, setAdminCache, clearAdminCache } from '../../utils/adminCache';
+import AdminPageHeader from '../../components/AdminPageHeader';
 
 const AdminInstitutions = () => {
   const cachedInst = getAdminCache('admin_institutions_data');
@@ -102,26 +103,23 @@ const AdminInstitutions = () => {
       <div className="bg-mesh"></div>
 
       <div className="main-wrap admin-institutions-wrap" style={{ maxWidth: '100%', padding: '24px 28px 80px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-          <div>
-            <h1 style={{ fontSize: '1.6rem', fontWeight: '800', margin: '0 0 3px' }}>Institution Management</h1>
-            <p style={{ color: 'var(--muted)', margin: '0', fontSize: '0.82rem' }}>
-              Activate, suspend, view details and monitor student counts across all institutions
-            </p>
-          </div>
-          <button 
+        <AdminPageHeader
+          title="Institution Management"
+          description="Activate, suspend, view details and monitor student counts across all institutions"
+          actions={<button
             className="btn-outline" 
             id="refreshBtn" 
             onClick={fetchInstitutions}
+            disabled={loading}
             style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '14px', height: '14px' }}>
+            {loading ? <span className="btn-spinner" aria-hidden="true" /> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '14px', height: '14px' }}>
               <polyline points="23 4 23 10 17 10"/>
               <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
-            </svg>
-            Refresh
-          </button>
-        </div>
+            </svg>}
+            {loading ? 'Refreshing...' : 'Refresh'}
+          </button>}
+        />
 
         {error && (
           <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid var(--red)', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', color: 'var(--red-l)', fontSize: '0.85rem' }}>
@@ -188,7 +186,7 @@ const AdminInstitutions = () => {
                           <td>
                             <strong>{inst.institution_name || inst.name || 'Unnamed Institution'}</strong>
                             <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
-                              Code: <code style={{ color: 'var(--purple-l)' }}>{inst.join_code || inst.code || inst.institution_code || inst.institution_id || 'N/A'}</code>
+                              Code: <code style={{ color: 'var(--color-primary)' }}>{inst.join_code || inst.code || inst.institution_code || inst.institution_id || 'N/A'}</code>
                             </div>
                           </td>
                           <td>
@@ -197,7 +195,7 @@ const AdminInstitutions = () => {
                             </span>
                           </td>
                           <td style={{ fontWeight: 700, color: 'var(--text)' }}>
-                            👥 {studentCount}
+                            {studentCount}
                           </td>
                           <td>{questionCount}</td>
                           <td>{examCount}</td>

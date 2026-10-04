@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Alert, Button, Input, Card, Select } from '../../components';
+import { ChevronDownIcon, EmailIcon, PhoneIcon } from '../../components/icons';
+import PublicFooter from '../../components/PublicFooter';
 
 const ContactUs = () => {
   const [formData, setFormData] = useState({
@@ -44,7 +45,8 @@ const ContactUs = () => {
   ];
 
   return (
-    <div style={styles.container}>
+    <>
+    <div className="contact-page" style={styles.container}>
       {/* Header */}
       <section style={styles.headerSection}>
         <h1 style={styles.header}>Get in Touch</h1>
@@ -54,9 +56,9 @@ const ContactUs = () => {
       </section>
 
       {/* Contact Info Grid */}
-      <section style={styles.gridSection}>
-        <Card variant="outlined" style={styles.infoCard}>
-          <div style={styles.infoCardIcon}>📧</div>
+      <section className="contact-info-grid" style={styles.gridSection}>
+        <Card variant="outlined" className="contact-info-card" style={styles.infoCard}>
+          <div style={styles.infoCardIcon}><EmailIcon size={32} /></div>
           <h2 style={styles.infoCardTitle}>Email Support</h2>
           <div style={styles.infoItem}>
             <span style={styles.infoLabel}>Support Email</span>
@@ -72,8 +74,8 @@ const ContactUs = () => {
           </div>
         </Card>
 
-        <Card variant="outlined" style={styles.infoCard}>
-          <div style={styles.infoCardIcon}>📞</div>
+        <Card variant="outlined" className="contact-info-card" style={styles.infoCard}>
+          <div style={styles.infoCardIcon}><PhoneIcon size={32} /></div>
           <h2 style={styles.infoCardTitle}>Support Hours</h2>
           <div style={styles.infoItem}>
             <span style={styles.infoLabel}>Response Time</span>
@@ -92,7 +94,7 @@ const ContactUs = () => {
 
       {/* Contact Form */}
       <section style={styles.formSection}>
-        <Card variant="elevated" style={styles.formCard}>
+        <Card variant="elevated" className="contact-form-card" style={styles.formCard}>
           <h2 style={styles.formTitle}>Send us a Message</h2>
 
           {responseMessage && (
@@ -187,7 +189,7 @@ const ContactUs = () => {
                   ...styles.faqToggle,
                   ...(openFaqItems[idx] ? styles.faqToggleOpen : {})
                 }}>
-                  ▼
+                  <ChevronDownIcon size={18} />
                 </span>
               </button>
               {openFaqItems[idx] && (
@@ -200,6 +202,8 @@ const ContactUs = () => {
         </div>
       </section>
     </div>
+    <PublicFooter />
+    </>
   );
 };
 

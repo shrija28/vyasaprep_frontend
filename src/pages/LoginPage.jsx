@@ -1,14 +1,16 @@
 import React, { useState, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { Input, Button, Alert, Card } from '../components';
 
 const LoginPage = () => {
-  const [role, setRole] = useState('student');
+  const location = useLocation();
+  const requestedRole = location.state?.role;
+  const [role, setRole] = useState(['student', 'institution', 'admin'].includes(requestedRole) ? requestedRole : 'student');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [info, setInfo] = useState(() => {
+  const [info] = useState(() => {
     if (location.state?.subscriptionSuccess) {
       return `Subscription active for ${location.state.planName || 'Plan'}! Sign in to enter your dashboard.`;
     }
@@ -85,7 +87,7 @@ const LoginPage = () => {
       else if (role === 'institution') navigate('/institution/dashboard');
       else navigate('/dashboard');
       
-    } catch (err) {
+    } catch {
       setError('Network error. Ensure the backend is running.');
       setLoading(false);
     }

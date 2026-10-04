@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Input, Button, Alert, Card } from '../components';
+import { InstitutionsIcon, StudentsIcon } from '../components/icons';
 
 const RegisterPage = () => {
   const [displayName, setDisplayName] = useState('');
@@ -57,9 +58,9 @@ const RegisterPage = () => {
 
       setSuccess('You have registered successfully. Redirecting to login...');
       setTimeout(() => {
-        navigate('/login', { state: { registered: true } });
+        navigate('/login', { state: { registered: true, role: 'student' } });
       }, 1500);
-    } catch (err) {
+    } catch {
       setError('Network error. Ensure the backend is running.');
       setLoading(false);
     }
@@ -129,7 +130,10 @@ const RegisterPage = () => {
                       onChange={() => setJoinType('independent')}
                       style={styles.joinTypeRadio}
                     />
-                    <span>🎓 Personal Student</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                      <StudentsIcon size={18} />
+                      Personal Student
+                    </span>
                   </label>
                   <label style={{
                     ...styles.joinTypeOption,
@@ -143,7 +147,10 @@ const RegisterPage = () => {
                       onChange={() => setJoinType('via_code')}
                       style={styles.joinTypeRadio}
                     />
-                    <span>🏫 Through Institution</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                      <InstitutionsIcon size={18} />
+                      Through Institution
+                    </span>
                   </label>
                 </div>
               </div>
@@ -198,7 +205,7 @@ const styles = {
   card: {
     maxWidth: '420px',
     width: '100%',
-    padding: 'clamp(1.5rem, 3vw, 2rem)',
+    padding: 0,
     backgroundColor: 'var(--color-surface)',
     border: '1px solid var(--color-border)',
     borderRadius: '12px',

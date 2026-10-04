@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { CrossIcon } from './icons';
 import './Sidebar.css';
 
 /**
@@ -32,11 +33,12 @@ const Sidebar = ({
     <>
       {/* Mobile Toggle Button */}
       <button
-        className="sidebar-toggle"
+        className={`sidebar-toggle${isOpen ? ' sidebar-toggle-open' : ''}`}
         onClick={toggleSidebar}
         aria-label="Toggle sidebar"
+        type="button"
       >
-        {isOpen ? '✕' : '☰'}
+        {isOpen ? <CrossIcon size={18} /> : <span aria-hidden="true" className="sidebar-toggle-bars"><span /><span /><span /></span>}
       </button>
 
       {/* Overlay */}
@@ -62,6 +64,7 @@ const Sidebar = ({
             <NavLink
               key={item.to}
               to={item.to}
+              end={item.end}
               className={({ isActive }) =>
                 `sidebar-link ${isActive ? 'sidebar-link-active' : ''}`
               }

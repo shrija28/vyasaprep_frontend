@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { ErrorState, LoadingState } from '../../components';
+import AdminPageHeader from '../../components/AdminPageHeader';
 import { getAdminCache, setAdminCache } from '../../utils/adminCache';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend, Filler
@@ -139,16 +141,30 @@ const AdminDashboard = () => {
     datasets: [{
       label: 'Exams Taken',
       data: Object.values(examsBySubject),
-      backgroundColor: 'rgba(124, 58, 237, 0.8)',
+      backgroundColor: 'rgba(230, 95, 0, 0.8)',
       borderRadius: 4
     }]
   };
 
   const formatDate = (value) => value ? new Date(value).toLocaleDateString() : '—';
   const sectionMessage = (items, emptyMessage) => {
-    if (loading && !data) return 'Loading…';
-    if (error && !data) return 'Unable to load this section.';
-    if (!items?.length) return emptyMessage;
+    if (loading && !data) {
+      return <LoadingState message="Loading dashboard data..." size="sm" />;
+    }
+    if (error && !data) {
+      return (
+        <ErrorState
+          title="Dashboard data unavailable"
+          message={error}
+          action={
+            <button className="btn-primary small" onClick={fetchAdminDashboardData} type="button">
+              Retry
+            </button>
+          }
+        />
+      );
+    }
+    if (!items?.length) return <div className="dashboard-state">{emptyMessage}</div>;
     return null;
   };
 
@@ -261,7 +277,7 @@ const AdminDashboard = () => {
     /* ── Section headers with "View All" ── */
     .section-nav { display:flex;align-items:center;justify-content:space-between;width:100%; }
     .view-all-link {
-      font-size:0.78rem;font-weight:600;color:var(--purple-l,#a78bfa);
+      font-size:0.78rem;font-weight:600;color:var(--color-primary);
       text-decoration:none;display:flex;align-items:center;gap:4px;
       transition:opacity 0.15s;white-space:nowrap;
     }
@@ -322,20 +338,22 @@ const AdminDashboard = () => {
       <div className="main-wrap admin-dashboard-wrap">
 
     
-    <div style={{"display":"flex","alignItems":"center","justifyContent":"space-between","marginBottom":"20px"}}>
-      <div>
-        <h1 style={{"fontSize":"1.6rem","fontWeight":"800","margin":"0 0 3px"}}>Platform Dashboard</h1>
-        <p style={{"color":"var(--muted)"}} id="lastUpdated">{error ? error : lastUpdated ? `Updated ${lastUpdated}` : loading ? 'Loading dashboard data…' : 'No dashboard data available'}</p>
-      </div>
-      <button className="btn-outline" id="refreshBtn" onClick={fetchAdminDashboardData} style={{"display":"flex","alignItems":"center","gap":"6px"}}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{"width":"14px","height":"14px"}}><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
-        Refresh
-      </button>
-    </div>
+    <AdminPageHeader
+      title="Platform Dashboard"
+      description={error && !data ? 'Dashboard unavailable' : lastUpdated ? `Updated ${lastUpdated}` : loading ? 'Loading dashboard data…' : 'No dashboard data available'}
+      actions={<button className="btn-outline" id="refreshBtn" onClick={fetchAdminDashboardData} disabled={loading} style={{"display":"flex","alignItems":"center","gap":"6px","minHeight":"38px","padding":"8px 18px","borderRadius":"10px"}}>
+        {loading ? (
+          <span className="btn-spinner" aria-hidden="true" />
+        ) : (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{"width":"14px","height":"14px"}}><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        )}
+        {loading ? 'Refreshing...' : 'Refresh'}
+      </button>}
+    />
 
     
     <div className="quick-actions">
-      <span className="quick-actions-label">⚡ Quick Actions</span>
+      <span className="quick-actions-label">Priority Quick Actions</span>
       <Link to="/admin/student-manage?action=create" className="qa-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Add Student
@@ -363,9 +381,23 @@ const AdminDashboard = () => {
     </div>
 
     
+    {error && !data ? (
+      <div style={{ marginBottom: '20px' }}>
+        <ErrorState
+          title="Dashboard unavailable"
+          message={error}
+          action={
+            <button className="btn-primary small" onClick={fetchAdminDashboardData} type="button">
+              Retry
+            </button>
+          }
+        />
+      </div>
+    ) : null}
+
     <div id="alertsSection" style={{"marginBottom":"20px","display":"none"}}>
       <div style={{"display":"flex","alignItems":"center","justifyContent":"space-between","marginBottom":"8px"}}>
-        <span style={{"fontSize":"0.72rem","textTransform":"uppercase","letterSpacing":"0.5px","color":"var(--muted)","fontWeight":"700"}}>⚠️ Alerts</span>
+        <span style={{"fontSize":"0.72rem","textTransform":"uppercase","letterSpacing":"0.5px","color":"var(--muted)","fontWeight":"700"}}>Warning  Alerts</span>
       </div>
       <div id="alertsList"></div>
     </div>
@@ -378,35 +410,30 @@ const AdminDashboard = () => {
         <div className="kpi-val" id="kpiInstitutions">{data ? data.kpis.institutions : "—"}</div>
         <div className="kpi-lbl">Institutions</div>
         <div className="kpi-sub" id="kpiInstitutionsSub">{data ? data.kpis.institutionsSub : "—"}</div>
-        <span className="kpi-arrow">→</span>
       </Link>
       <Link to="/admin/students" className="kpi-card">
-        <div className="kpi-accent" style={{"background":"linear-gradient(90deg,#7c3aed,#4f46e5)"}}></div>
+        <div className="kpi-accent" style={{"background":"linear-gradient(90deg,#E65F00,#B34A00)"}}></div>
         <div className="kpi-val" id="kpiStudents">{data ? data.kpis.students : "—"}</div>
         <div className="kpi-lbl">Total Students</div>
         <div className="kpi-sub" id="kpiStudentsSub">{data ? data.kpis.studentsSub : "—"}</div>
-        <span className="kpi-arrow">→</span>
       </Link>
       <Link to="/admin/questions" className="kpi-card">
         <div className="kpi-accent" style={{"background":"linear-gradient(90deg,#059669,#0d9488)"}}></div>
         <div className="kpi-val" id="kpiQuestions">{data ? data.kpis.questions : "—"}</div>
         <div className="kpi-lbl">Total Questions</div>
         <div className="kpi-sub" id="kpiQuestionsSub">{data ? data.kpis.questionsSub : "—"}</div>
-        <span className="kpi-arrow">→</span>
       </Link>
       <Link to="/admin/exams" className="kpi-card">
         <div className="kpi-accent" style={{"background":"linear-gradient(90deg,#d97706,#b45309)"}}></div>
         <div className="kpi-val" id="kpiExams">{data ? data.kpis.exams : "—"}</div>
         <div className="kpi-lbl">Exams Created</div>
         <div className="kpi-sub" id="kpiExamsSub">{data ? data.kpis.examsSub : "—"}</div>
-        <span className="kpi-arrow">→</span>
       </Link>
       <Link to="/admin/analytics" className="kpi-card">
         <div className="kpi-accent" style={{"background":"linear-gradient(90deg,#0891b2,#0d9488)"}}></div>
         <div className="kpi-val" id="kpiAttempts">{data ? data.kpis.attempts ?? 0 : '—'}</div>
         <div className="kpi-lbl">Exam Attempts</div>
         <div className="kpi-sub" id="kpiAttemptsSub">{data ? data.kpis.attemptsSub ?? 'Recorded attempts' : '—'}</div>
-        <span className="kpi-arrow">→</span>
       </Link>
     </div>
 
@@ -420,7 +447,7 @@ const AdminDashboard = () => {
               <h3 style={{"margin":"0","fontSize":"1rem"}}>Admin Question Bank</h3>
               <p className="section-sub" style={{"margin":"0"}}>Click a subject bar to filter questions</p>
             </div>
-            <Link to="/admin/questions" className="view-all-link">Manage →</Link>
+            <Link to="/admin/questions" className="view-all-link">Manage</Link>
           </div>
         </div>
         <div className="section-body chart-body">{data && qChartData.labels.length ? <Line data={qChartData} options={chartOptions} /> : <div className="dashboard-state">{sectionMessage([], 'No admin question-bank data')}</div>}</div>
@@ -434,7 +461,7 @@ const AdminDashboard = () => {
               <h3 style={{"margin":"0","fontSize":"1rem"}}>Exams by Subject</h3>
               <p className="section-sub" style={{"margin":"0"}}>Click a segment to filter exams</p>
             </div>
-            <Link to="/admin/exams" className="view-all-link">View All →</Link>
+            <Link to="/admin/exams" className="view-all-link">View All</Link>
           </div>
         </div>
         <div className="section-body chart-body">{data && examsChartData.labels.length ? <Bar data={examsChartData} options={chartOptions} /> : <div className="dashboard-state">{sectionMessage([], 'No exam subject data')}</div>}</div>
@@ -452,7 +479,7 @@ const AdminDashboard = () => {
               <h3 style={{"margin":"0","fontSize":"1rem"}}>Institution Question Banks</h3>
               <p className="section-sub" style={{"margin":"0"}}>Click institution to manage</p>
             </div>
-            <Link to="/admin/institutions" className="view-all-link">Manage →</Link>
+            <Link to="/admin/institutions" className="view-all-link">Manage</Link>
           </div>
         </div>
         <div className="section-body">
@@ -474,7 +501,7 @@ const AdminDashboard = () => {
               <h3 style={{"margin":"0","fontSize":"1rem"}}>Recent Activity</h3>
               <p className="section-sub" style={{"margin":"0"}}>Latest platform events</p>
             </div>
-            <Link to="/admin/analytics" className="view-all-link">Full Log →</Link>
+            <Link to="/admin/analytics" className="view-all-link">Full Log</Link>
           </div>
         </div>
         <div className="section-body" style={{"paddingTop":"4px"}}>
@@ -482,7 +509,7 @@ const AdminDashboard = () => {
             {(() => {
               const items = data?.recent_activity || [];
               const message = sectionMessage(items, 'No recent activity');
-              return message ? <div className="dashboard-state">{message}</div> : items.map((item) => <div key={item.id} className="activity-item"><span className="activity-dot" style={{ background: '#a78bfa' }} /><div><div className="activity-text">{item.title}</div><div className="activity-time">{item.subtitle} · {formatDate(item.timestamp)}</div></div></div>);
+              return message ? <div className="dashboard-state">{message}</div> : items.map((item) => <div key={item.id} className="activity-item"><span className="activity-dot" style={{ background: 'var(--color-primary)' }} /><div><div className="activity-text">{item.title}</div><div className="activity-time">{item.subtitle} · {formatDate(item.timestamp)}</div></div></div>);
             })()}
           </div>
         </div>
@@ -497,7 +524,7 @@ const AdminDashboard = () => {
         <div className="section-card-header">
           <div className="section-nav">
             <div><h3 style={{"margin":"0","fontSize":"1rem"}}>Recent Institutions</h3></div>
-            <Link to="/admin/institutions" className="view-all-link">View All →</Link>
+            <Link to="/admin/institutions" className="view-all-link">View All</Link>
           </div>
         </div>
         <div className="section-body" style={{"padding":"0"}}>

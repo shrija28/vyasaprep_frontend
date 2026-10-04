@@ -1,17 +1,25 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import {
+  PhysicsIcon,
+  ChemistryIcon,
+  MathematicsIcon,
+  BiologyIcon,
+  BooksIcon,
+  SearchIcon
+} from '../../components/icons';
 
 const SUBJECT_CONFIG = {
   Physics: {
     name: 'Physics',
-    icon: '⚡',
-    color: '#38bdf8',
-    bgBadge: 'rgba(56, 189, 248, 0.12)',
-    borderBadge: 'rgba(56, 189, 248, 0.3)',
-    gradient: 'linear-gradient(135deg, #0284c7, #2563eb)'
+    icon: PhysicsIcon,
+    color: '#1A365D',
+    bgBadge: 'rgba(26, 54, 93, 0.08)',
+    borderBadge: 'rgba(26, 54, 93, 0.24)',
+    gradient: 'linear-gradient(135deg, #1A365D, #2D4C73)'
   },
   Chemistry: {
     name: 'Chemistry',
-    icon: '🧪',
+    icon: ChemistryIcon,
     color: '#34d399',
     bgBadge: 'rgba(52, 211, 153, 0.12)',
     borderBadge: 'rgba(52, 211, 153, 0.3)',
@@ -19,15 +27,15 @@ const SUBJECT_CONFIG = {
   },
   Mathematics: {
     name: 'Mathematics',
-    icon: '📐',
-    color: '#c084fc',
-    bgBadge: 'rgba(192, 132, 252, 0.12)',
-    borderBadge: 'rgba(192, 132, 252, 0.3)',
-    gradient: 'linear-gradient(135deg, #7c3aed, #4f46e5)'
+    icon: MathematicsIcon,
+    color: '#F87B4A',
+    bgBadge: 'rgba(230, 95, 0, 0.12)',
+    borderBadge: 'rgba(230, 95, 0, 0.3)',
+    gradient: 'linear-gradient(135deg, #E65F00, #B34A00)'
   },
   Biology: {
     name: 'Biology',
-    icon: '🌱',
+    icon: BiologyIcon,
     color: '#fbbf24',
     bgBadge: 'rgba(251, 191, 36, 0.12)',
     borderBadge: 'rgba(251, 191, 36, 0.3)',
@@ -120,14 +128,14 @@ const Syllabus = () => {
     <>
       <div className="bg-mesh"></div>
 
-      <main className="main-wrap" style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 20px 80px' }}>
+      <main className="main-wrap" style={{ maxWidth: '1440px', width: '100%', boxSizing: 'border-box', margin: '0 auto', padding: '32px 20px 80px' }}>
         {/* Hero */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '4px 12px', borderRadius: '20px', background: 'rgba(124,58,237,0.12)', color: 'var(--purple-l, #a855f7)', fontSize: '0.82rem', fontWeight: 700, marginBottom: '10px' }}>
-            <span>📖</span> Karnataka Pre-University Course
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '4px 12px', borderRadius: '20px', background: 'rgba(230, 95, 0, 0.12)', color: 'var(--color-primary, #E65F00)', fontSize: '0.82rem', fontWeight: 700, marginBottom: '10px' }}>
+            <BooksIcon size={16} /> Karnataka Pre-University Course
           </div>
           <h1 style={{ fontSize: '2.2rem', fontWeight: 800, margin: '0 0 8px 0', letterSpacing: '-0.5px' }}>
-            KCET Official <span style={{ background: 'linear-gradient(135deg, #a855f7, #38bdf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Syllabus</span>
+            KCET Official <span style={{ color: 'var(--color-primary)' }}>Syllabus</span>
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '0.95rem', margin: 0 }}>
             Karnataka PUC 1st &amp; 2nd Year — All 4 subjects aligned with KEA / DPUE Karnataka
@@ -172,7 +180,8 @@ const Syllabus = () => {
                   {stat.p1}+{stat.p2}
                 </div>
                 <div style={{ fontSize: '0.74rem', fontWeight: 600, color: isSelected ? cfg.color : 'var(--muted)', marginTop: '2px' }}>
-                  {cfg.icon} {subjKey}
+                  <cfg.icon size={14} style={{ display: 'inline-block', marginRight: '4px', verticalAlign: 'middle', color: cfg.color }} />
+                  {subjKey}
                 </div>
               </div>
             );
@@ -219,7 +228,7 @@ const Syllabus = () => {
                     transition: 'all 0.15s ease'
                   }}
                 >
-                  <span>{cfg.icon}</span>
+                  <cfg.icon size={16} style={{ color: 'inherit' }} />
                   <span>{subj}</span>
                 </button>
               );
@@ -238,7 +247,7 @@ const Syllabus = () => {
                     padding: '4px 10px',
                     borderRadius: '6px',
                     border: 'none',
-                    background: selectedPuc === puc ? 'var(--purple, #7c3aed)' : 'transparent',
+                    background: selectedPuc === puc ? 'var(--color-primary, #E65F00)' : 'transparent',
                     color: selectedPuc === puc ? '#fff' : 'var(--muted)',
                     fontSize: '0.78rem',
                     fontWeight: selectedPuc === puc ? 700 : 500,
@@ -279,7 +288,7 @@ const Syllabus = () => {
 
           {error && !loading && (
             <div style={{ padding: '16px 20px', background: 'rgba(239,68,68,0.1)', border: '1px solid var(--red)', borderRadius: '12px', color: 'var(--red)', textAlign: 'center' }}>
-              <p style={{ fontWeight: 600, margin: 0 }}>⚠️ {error}</p>
+              <p style={{ fontWeight: 600, margin: 0 }}>Warning  {error}</p>
               <button
                 type="button"
                 className="btn-outline small"
@@ -300,7 +309,7 @@ const Syllabus = () => {
               textAlign: 'center',
               color: 'var(--muted)'
             }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>🔍</div>
+              <div style={{ marginBottom: '8px', color: 'var(--color-primary)' }}><SearchIcon size={32} /></div>
               <div style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--text)' }}>No chapters found</div>
               <p style={{ fontSize: '0.86rem', marginTop: '4px' }}>No chapters match your search query "{searchQuery}".</p>
               <button
@@ -325,7 +334,7 @@ const Syllabus = () => {
                 const is1stPuc = puc.puc_year === '1st PUC';
                 const pucBadgeColor = is1stPuc
                   ? { bg: 'rgba(37, 99, 235, 0.15)', text: '#60a5fa', border: 'rgba(37, 99, 235, 0.3)' }
-                  : { bg: 'rgba(168, 85, 247, 0.15)', text: '#c084fc', border: 'rgba(168, 85, 247, 0.3)' };
+                  : { bg: 'rgba(230, 95, 0, 0.15)', text: '#F87B4A', border: 'rgba(230, 95, 0, 0.3)' };
 
                 return (
                   <div

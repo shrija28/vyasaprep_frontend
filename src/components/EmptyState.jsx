@@ -6,7 +6,7 @@ import './EmptyState.css';
  * Shows message when no data available
  */
 const EmptyState = ({
-  icon = '📭',
+  icon = null,
   title = 'No data available',
   message = 'There is nothing here yet',
   action = null,
@@ -14,7 +14,7 @@ const EmptyState = ({
 }) => {
   return (
     <div className={`empty-state ${className}`.trim()}>
-      <div className="empty-icon">{icon}</div>
+      {icon ? <div className="empty-icon">{icon}</div> : <div className="empty-icon" aria-hidden="true">—</div>}
       <h3 className="empty-title">{title}</h3>
       <p className="empty-message">{message}</p>
       {action && <div className="empty-action">{action}</div>}

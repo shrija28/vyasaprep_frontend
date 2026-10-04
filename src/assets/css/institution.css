@@ -6,7 +6,7 @@
    dashboard (blue accent) and platform admin interface (default theme).
 
    Visual theme:
-   - Accent color: #8b5cf6 (purple)
+  - Accent color: #E65F00 (warm orange)
    - "Institution Portal" badge in the nav brand
    - Consistent layout with the rest of VyasaPrep
 
@@ -41,30 +41,62 @@
    ───────────────────────────────────────────────────────────────────────── */
 
 :root {
-  /* Institution-specific palette (overrides for .institution-nav scope) */
-  --inst-accent: #8b5cf6;
-  --inst-accent-light: #a78bfa;
-  --inst-accent-dark: #6d28d9;
-  --inst-accent-glow: rgba(139, 92, 246, 0.4);
-  --inst-accent-soft: rgba(139, 92, 246, 0.12);
-  --inst-accent-border: rgba(139, 92, 246, 0.28);
+  /* Institution-specific palette: Uses GLOBAL primary color (orange) with adjusted shades for institutional branding */
+  --inst-accent: var(--color-primary);
+  --inst-accent-light: #F87B4A;
+  --inst-accent-dark: var(--color-primary-hover);
+  --inst-accent-glow: rgba(230, 95, 0, 0.4);
+  --inst-accent-soft: rgba(230, 95, 0, 0.12);
+  --inst-accent-border: rgba(230, 95, 0, 0.28);
+}
+
+.institution-layout {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  min-height: 100svh;
+  background: var(--color-surface);
+}
+
+.institution-layout .main-content.institution-portal {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 24px clamp(16px, 2vw, 32px) 80px;
+}
+
+.institution-layout .main-content.institution-portal > .main-wrap,
+.institution-layout .main-content.institution-portal > .institution-page,
+.institution-layout .main-content.institution-portal > main,
+.institution-layout .main-wrap,
+.institution-page {
+  width: 100%;
+  max-width: none !important;
+  min-width: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 /* ── Institution Navbar ────────────────────────────────────────────────────
-   Inherits .navbar layout from style.css and overlays the purple theme.
-   Adds a top accent stripe and a glowing brand to clearly differentiate
+  Inherits .navbar layout from style.css and uses the shared brand palette.
+  Adds a top accent stripe to clearly differentiate
    the portal from the student and platform admin interfaces.
    ───────────────────────────────────────────────────────────────────────── */
-.institution-nav {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: #060610;
+.institution-nav,
+.institution-navbar {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   position: relative;
 }
 
-/* Thin purple accent line at the very top to mark the portal */
-.institution-nav::before {
+/* Thin brand accent line at the very top to mark the portal */
+.institution-nav::before,
+.institution-navbar::before {
   content: "";
   position: absolute;
   top: 0;
@@ -81,8 +113,9 @@
   z-index: 1;
 }
 
-/* Brand icon — solid purple gradient instead of the default purple→blue */
+/* Brand icon uses the shared orange accent. */
 .institution-nav .brand-icon,
+.institution-navbar .brand-icon,
 .institution-brand-icon {
   background: linear-gradient(
     135deg,
@@ -92,17 +125,18 @@
   box-shadow: 0 0 20px var(--inst-accent-glow);
 }
 
-.institution-nav .brand-name {
-  color: #ffffff !important;
+.institution-nav .brand-name,
+.institution-navbar .brand-name {
+  color: var(--color-text-primary) !important;
 }
 
-/* Brand suffix — bright vibrant gradient */
+/* Brand suffix uses the shared orange accent. */
 .institution-nav .brand-ai,
 .institution-brand-ai {
   background: linear-gradient(
     135deg,
-    #c084fc,
-    #38bdf8
+    var(--color-primary),
+    var(--color-primary-hover)
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -119,10 +153,10 @@
   gap: 6px;
   margin-left: 10px;
   padding: 4px 12px;
-  background: rgba(139, 92, 246, 0.3) !important;
-  border: 1.5px solid #a78bfa !important;
+  background: var(--color-soft-orange) !important;
+  border: 1px solid var(--color-primary) !important;
   border-radius: 20px;
-  color: #ffffff !important;
+  color: var(--color-primary) !important;
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.6px;
@@ -135,8 +169,8 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 0 8px #ffffff;
+  background: var(--color-primary);
+  box-shadow: 0 0 8px rgba(230, 95, 0, 0.35);
 }
 
 /* ── Institution Nav Links ─────────────────────────────────────────────────
@@ -171,9 +205,9 @@
 .institution-nav .nav-pill.active,
 .institution-pill.active {
   color: #ffffff !important;
-  background: #7c3aed !important;
-  border: 1px solid #9333ea !important;
-  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.5);
+  background: var(--color-primary) !important;
+  border: 1px solid var(--color-primary-hover) !important;
+  box-shadow: 0 2px 10px rgba(230, 95, 0, 0.18);
   font-weight: 800;
 }
 
@@ -210,9 +244,12 @@
 .institution-page {
   position: relative;
   z-index: 1;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 32px 20px 80px;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 24px clamp(16px, 2vw, 32px) 80px;
 }
 
 .institution-page-header {
@@ -229,6 +266,14 @@
   font-weight: 800;
   letter-spacing: -0.5px;
   color: var(--text);
+}
+
+#institutionDashboardPage {
+  padding-top: 12px;
+}
+
+#institutionDashboardPage .institution-page-title {
+  margin-top: 0;
 }
 
 /* Institution cards use light surfaces; keep shared h2 defaults readable there. */
@@ -254,23 +299,19 @@
   margin-top: 4px;
 }
 
-/* ── Section Icon Override (purple variant for institution sections) ─────── */
+/* ── Section Icon Override ──────────────────────────────────────────────── */
 .section-icon.institution {
   background: var(--inst-accent-soft);
   color: var(--inst-accent-light);
 }
 
-/* ── Buttons (purple primary for institution portal) ─────────────────────── */
+/* ── Institution Buttons ────────────────────────────────────────────────── */
 .btn-institution {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 10px 18px;
-  background: linear-gradient(
-    135deg,
-    var(--inst-accent),
-    var(--inst-accent-dark)
-  );
+  background: var(--color-primary);
   border: none;
   border-radius: var(--rs);
   color: #fff;
@@ -278,10 +319,11 @@
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-  box-shadow: 0 4px 14px var(--inst-accent-glow);
+  box-shadow: var(--shadow-subtle);
 }
 
 .btn-institution:hover {
+  background: var(--color-primary-hover);
   transform: translateY(-1px);
   box-shadow: 0 6px 20px var(--inst-accent-glow);
 }
@@ -291,7 +333,10 @@
 }
 
 .btn-institution:disabled {
-  opacity: 0.55;
+  background: var(--color-surface-secondary);
+  color: var(--color-text-secondary);
+  border: 1px solid #D6CEC3;
+  opacity: 1;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
@@ -302,10 +347,10 @@
   align-items: center;
   gap: 8px;
   padding: 9px 17px;
-  background: transparent;
-  border: 1px solid var(--inst-accent-border);
+  background: var(--color-surface);
+  border: 1px solid var(--color-primary);
   border-radius: var(--rs);
-  color: var(--inst-accent-light);
+  color: var(--color-primary);
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
@@ -313,8 +358,9 @@
 }
 
 .btn-institution-outline:hover {
-  background: var(--inst-accent-soft);
-  border-color: var(--inst-accent);
+  background: var(--color-soft-orange);
+  border-color: var(--color-primary-hover);
+  color: var(--color-primary-hover);
 }
 
 /* ── Responsive: Mobile (< 768px) ──────────────────────────────────────────
@@ -523,7 +569,7 @@
   color: var(--green-l);
 }
 .kpi-grid .kpi-tile[data-status="active"] .kpi-icon::after {
-  content: "✓";
+  content: "";
   background: var(--green);
   color: #ffffff;
 }
@@ -558,7 +604,7 @@
 }
 .kpi-grid .kpi-tile[data-status="expired"] .kpi-icon::after,
 .kpi-grid .kpi-tile[data-status="cancelled"] .kpi-icon::after {
-  content: "✕";
+  content: "";
   background: var(--red);
   color: #ffffff;
 }
@@ -615,7 +661,6 @@
   .institution-page,
   .main-wrap {
     max-width: 100%;
-    overflow-x: hidden;
   }
 
   .institution-page input,
@@ -867,7 +912,7 @@
   box-shadow: 0 0 0 3px var(--inst-accent-soft);
 }
 
-/* Copy buttons — outline-style purple to feel native to the institution
+/* Copy buttons — outline-style orange to feel native to the institution
    portal but distinct from the primary "Done" action. */
 .btn-copy {
   display: inline-flex;
@@ -892,9 +937,9 @@
 }
 
 .btn-copy:hover {
-  background: rgba(139, 92, 246, 0.20);
-  border-color: var(--inst-accent);
-  color: var(--text);
+  background: var(--color-soft-orange);
+  border-color: var(--color-primary-hover);
+  color: var(--color-primary-hover);
 }
 
 .btn-copy:active {
@@ -1009,23 +1054,19 @@
 
 /* ── Status-specific colour treatment ───────────────────────────────────
    Non-color reinforcement (REQ-13.9, WCAG 2.1 AA): each status variant
-   adds a left border accent and an inline glyph before the alert title
-   text so the severity is conveyed beyond hue and the static ⚠️ emoji. */
+   adds a left border accent and a coloured dot before the alert title text
+   so the severity is conveyed beyond hue without using glyph icons. */
 .institution-alert-banner[data-status] {
   border-left-width: 4px;
 }
 .institution-alert-banner[data-status] .alert-text strong::before {
   display: inline-block;
   margin-right: 6px;
-  width: 18px;
-  height: 18px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  font-size: 0.7rem;
-  font-weight: 800;
-  line-height: 18px;
-  text-align: center;
-  vertical-align: -2px;
-  color: #ffffff;
+  content: '';
+  vertical-align: middle;
 }
 
 /* Overdue / Grace period — yellow / orange */
@@ -1041,7 +1082,6 @@
 }
 .institution-alert-banner[data-status="overdue"] .alert-text strong::before,
 .institution-alert-banner[data-status="grace_period"] .alert-text strong::before {
-  content: "!";
   background: var(--yellow);
 }
 
@@ -1058,7 +1098,6 @@
 }
 .institution-alert-banner[data-status="expired"] .alert-text strong::before,
 .institution-alert-banner[data-status="cancelled"] .alert-text strong::before {
-  content: "✕";
   background: var(--red);
 }
 
@@ -1219,6 +1258,248 @@
   color: var(--red-l);
 }
 
+/* Institution Exams: readable feedback, status, and table actions */
+.institution-exams-page .institution-exam-feedback {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.institution-exams-page .institution-exams-table {
+  min-width: 1080px;
+  color: #1E293B;
+}
+
+.institution-exams-page .institution-exams-table th {
+  color: #5B6470;
+  border-bottom-color: #E2DDD4;
+  cursor: default;
+}
+
+.institution-exams-page .institution-exams-table th:hover {
+  color: #1E293B;
+}
+
+.institution-exams-page .institution-exams-table td {
+  border-bottom-color: rgba(26, 54, 93, 0.10);
+  vertical-align: middle;
+}
+
+.institution-exams-page .institution-exams-table tr:hover td {
+  background: #FFF8F0;
+}
+
+.institution-exams-name {
+  color: #1E293B;
+  font-weight: 700;
+}
+
+.institution-exams-created {
+  display: inline-block;
+  margin-top: 3px;
+  color: #64748B;
+  font-size: 0.78rem;
+}
+
+.institution-exams-subject {
+  display: inline-block;
+  padding: 4px 9px;
+  border: 1px solid #D8E3EE;
+  border-radius: 5px;
+  background: #EDF4FA;
+  color: #1A365D;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.institution-exams-meta {
+  color: #334155;
+  font-size: 0.85rem;
+}
+
+.institution-exams-meta strong {
+  color: #1E293B;
+}
+
+.institution-exams-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.institution-exams-status.is-published {
+  border-color: #86EFAC;
+  background: #DCFCE7;
+  color: #166534;
+}
+
+.institution-exams-status.is-published:hover {
+  background: #BBF7D0;
+}
+
+.institution-exams-status.is-draft {
+  border-color: #FCD34D;
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.institution-exams-status.is-draft:hover {
+  background: #FDE68A;
+}
+
+.institution-exams-status:focus-visible,
+.institution-exam-action:focus-visible {
+  outline: 2px solid #1A365D;
+  outline-offset: 2px;
+}
+
+.institution-exams-actions-cell {
+  text-align: right;
+}
+
+.institution-exams-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.institution-exam-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid;
+  border-radius: 6px;
+  background: #FCFBF8;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.institution-exam-action svg {
+  flex: 0 0 auto;
+}
+
+.institution-exam-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.institution-exam-action-view {
+  border-color: #C65A0A;
+  color: #A84300;
+}
+
+.institution-exam-action-view:hover:not(:disabled) {
+  border-color: #A84300;
+  background: #FFF0E3;
+}
+
+.institution-exam-action-results {
+  border-color: #8295AB;
+  color: #1A365D;
+}
+
+.institution-exam-action-results:hover {
+  border-color: #1A365D;
+  background: #EDF2F7;
+}
+
+.institution-exam-action-delete {
+  border-color: #FECACA;
+  background: #FEF2F2;
+  color: #991B1B;
+}
+
+.institution-exam-action-delete:hover {
+  border-color: #F87171;
+  background: #FEE2E2;
+  color: #7F1D1D;
+}
+
+.institution-exams-empty {
+  padding: 50px 20px;
+  color: #475569;
+  text-align: center;
+}
+
+.institution-exams-empty h3 {
+  color: #1A365D;
+}
+
+.institution-exams-empty p {
+  color: #526174;
+}
+
+.institution-delete-confirmation {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: #334155;
+  line-height: 1.6;
+}
+
+.institution-delete-confirmation-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border: 1px solid #FECACA;
+  border-radius: 8px;
+  background: #FEF2F2;
+  color: #991B1B;
+}
+
+.institution-delete-confirmation p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.institution-delete-confirmation strong {
+  color: #1E293B;
+  overflow-wrap: anywhere;
+}
+
+.institution-delete-confirmation .institution-delete-confirmation-note {
+  margin-top: 8px;
+  color: #64748B;
+  font-size: 0.88rem;
+}
+
+.institution-exam-delete-modal .modal-footer .btn-danger {
+  min-width: 126px;
+}
+
+@media (max-width: 768px) {
+  .institution-exams-page .table-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .institution-exams-actions {
+    gap: 6px;
+  }
+}
+
 .invitation-status-badge.badge-muted {
   background: var(--s1);
   border-color: var(--border);
@@ -1234,6 +1515,279 @@
 }
 
 .btn-revoke-invitation:disabled {
-  opacity: 0.6;
+  background: var(--color-surface-secondary);
+  color: var(--color-text-secondary);
+  border-color: #D6CEC3;
+  opacity: 1;
   cursor: not-allowed;
+}
+
+.institution-layout { width: 100%; min-width: 0; min-height: 100svh; }
+.institution-navbar {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+.institution-navbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 1800px;
+  min-width: 0;
+  box-sizing: border-box;
+  margin-inline: auto;
+  padding: 10px clamp(20px, 3vw, 48px);
+}
+.institution-nav-brand { min-width: 0 !important; }
+.institution-nav-links {
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: center !important;
+  gap: clamp(2px, 0.5vw, 8px) !important;
+}
+.institution-navbar .nav-links a.active {
+  background: var(--color-soft-orange);
+  color: var(--color-primary);
+}
+.institution-nav-actions { margin-left: auto !important; flex-shrink: 0; }
+.institution-nav-actions .btn-outline {
+  min-height: 38px;
+  padding: 8px 18px;
+  background: var(--color-surface);
+  color: var(--color-primary) !important;
+  border: 1px solid var(--color-primary);
+}
+.institution-nav-actions .btn-outline:hover {
+  background: var(--color-soft-orange);
+  color: var(--color-primary-hover) !important;
+}
+.institution-page {
+  max-width: 1440px;
+  min-width: 0;
+}
+.institution-layout .main-wrap {
+  width: 100%;
+  max-width: 1440px !important;
+  min-width: 0;
+  box-sizing: border-box;
+  margin-inline: auto;
+  padding: 24px clamp(20px, 3vw, 48px) 80px !important;
+}
+.institution-layout .institution-upload-wrap .drop-zone {
+  border-color: rgba(230, 95, 0, 0.3) !important;
+}
+.institution-layout .institution-upload-wrap .drop-zone.drag-over {
+  border-color: var(--color-primary) !important;
+  background: rgba(230, 95, 0, 0.06) !important;
+}
+.institution-layout .institution-upload-wrap .drop-icon {
+  background: rgba(230, 95, 0, 0.1) !important;
+}
+@media (max-width: 1360px) {
+  .institution-navbar { height: auto; }
+  .institution-navbar-inner { flex-wrap: wrap; gap: 8px 16px; }
+  .institution-nav-brand { order: 0; }
+  .institution-nav-actions { order: 1; margin-left: auto !important; }
+  .institution-nav-links {
+    order: 2;
+    display: grid !important;
+    flex: 1 0 100% !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    justify-content: stretch !important;
+    overflow: visible !important;
+  }
+}
+@media (max-width: 480px) {
+  .institution-navbar-inner { padding-inline: 16px; }
+  .institution-nav-links { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px !important; }
+  .institution-nav-links a { min-width: 0; white-space: normal !important; padding: 7px 8px; }
+}
+
+.student-performance-page {
+  --performance-heading: #1A365D;
+  --performance-text: #1E293B;
+  --performance-secondary: #475569;
+  --performance-muted: #64748B;
+  --performance-orange: #E65F00;
+  --performance-surface: #FCFBF8;
+  color: var(--performance-text);
+}
+.student-performance-page .section-card,
+.student-performance-page .kpi-tile {
+  background: var(--performance-surface);
+  border-color: rgba(26, 54, 93, 0.14);
+}
+.student-performance-page .section-card-header h2,
+.student-performance-page .results-header h3 {
+  color: var(--performance-heading);
+}
+.student-performance-page .section-sub,
+.student-performance-page .kpi-tile-label {
+  color: var(--performance-muted);
+}
+.student-performance-page .kpi-tile-val {
+  background: none;
+  color: var(--performance-heading);
+  -webkit-text-fill-color: var(--performance-heading);
+}
+.student-performance-page .performance-band-heading {
+  margin-bottom: 6px;
+  color: var(--performance-text);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.student-performance-page .performance-band-empty,
+.student-performance-page .section-body ul {
+  color: var(--performance-text);
+  font-weight: 600;
+}
+.student-performance-page .performance-recommendation {
+  padding: 14px 16px;
+  border: 1px solid rgba(26, 54, 93, 0.16);
+  border-radius: var(--rs);
+  background: #F7F5F1;
+  color: var(--performance-text);
+  line-height: 1.6;
+}
+.student-performance-page .performance-recommendation strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  color: var(--performance-heading);
+}
+.student-performance-page .performance-recommendation p {
+  color: var(--performance-text);
+}
+.student-performance-page .performance-rank-label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--performance-text);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+.student-performance-page .text-input {
+  color: var(--performance-text);
+  border-color: rgba(26, 54, 93, 0.24);
+}
+.student-performance-page .text-input::placeholder {
+  color: var(--performance-muted);
+  opacity: 1;
+}
+.student-performance-page .btn-primary {
+  background: #B84C00;
+  border-color: #B84C00;
+  color: #fff;
+}
+.student-performance-page .btn-primary:hover {
+  background: #963E00;
+  border-color: #963E00;
+}
+.student-performance-page .performance-rank-estimate {
+  padding: 5px 10px;
+  border: 1px solid rgba(230, 95, 0, 0.3);
+  border-radius: 6px;
+  background: rgba(230, 95, 0, 0.08);
+  color: #8A3900;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.student-performance-page .performance-tab {
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid rgba(26, 54, 93, 0.24);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--performance-heading);
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+.student-performance-page .performance-tab:hover {
+  background: rgba(26, 54, 93, 0.06);
+}
+.student-performance-page .performance-tab.active {
+  border-color: var(--performance-heading);
+  background: var(--performance-heading);
+  color: #fff;
+}
+.student-performance-page .performance-tab:focus-visible {
+  outline: 3px solid rgba(230, 95, 0, 0.45);
+  outline-offset: 2px;
+}
+.student-performance-page .results-table {
+  min-width: 600px;
+  color: var(--performance-text);
+}
+.student-performance-page .results-table th {
+  color: var(--performance-secondary);
+  cursor: default;
+}
+.student-performance-page .results-table th:hover {
+  color: var(--performance-secondary);
+}
+.student-performance-page .results-table td {
+  border-color: rgba(26, 54, 93, 0.1);
+  color: var(--performance-text);
+}
+.student-performance-page .results-table tr:hover td {
+  background: #F7F5F1;
+}
+.student-performance-page .performance-score {
+  color: var(--performance-heading);
+  font-weight: 800;
+}
+.student-performance-page .performance-status {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 4px;
+  background: #DCFCE7;
+  color: #166534;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.student-performance-page .performance-record {
+  color: #334155;
+  font-weight: 600;
+}
+.student-performance-page .performance-message,
+.student-performance-page .performance-empty-state {
+  margin-bottom: 20px;
+  padding: 24px;
+  border: 1px solid rgba(26, 54, 93, 0.16);
+  border-radius: 8px;
+  background: var(--performance-surface);
+  color: var(--performance-text);
+}
+.student-performance-page .performance-message.error {
+  border-color: rgba(185, 28, 28, 0.28);
+  background: #FEF2F2;
+  color: #7F1D1D;
+}
+.student-performance-page .performance-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.student-performance-page .performance-empty-state svg {
+  color: var(--performance-orange);
+}
+.student-performance-page .performance-empty-state h2 {
+  color: var(--performance-heading);
+  font-size: 1.15rem;
+}
+.student-performance-page .performance-empty-state p {
+  color: var(--performance-secondary);
+}
+@media (max-width: 480px) {
+  .student-performance-page .results-header { padding: 14px 16px; }
+  .student-performance-page .performance-empty-state { padding: 22px 16px; }
+  .student-performance-page .performance-rank-estimate { max-width: 100%; }
 }

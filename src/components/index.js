@@ -12,6 +12,10 @@ export { default as LoadingState } from './LoadingState';
 export { default as EmptyState } from './EmptyState';
 export { default as ErrorState } from './ErrorState';
 
+// Brand & Icon Components
+export { default as BrandLogo } from './BrandLogo';
+export * from './icons';
+
 // Legacy components (preserved)
 export { default as Navbar } from './Navbar';
 export { default as SubscriptionModal } from './SubscriptionModal';

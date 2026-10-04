@@ -27,7 +27,9 @@
 }
 
 .input-field {
+  box-sizing: border-box;
   width: 100%;
+  min-width: 0;
   padding: var(--spacing-md) var(--spacing-lg);
   padding-left: var(--spacing-lg);
   padding-right: var(--spacing-lg);
@@ -83,14 +85,20 @@
 }
 
 .input-error-text::before {
-  content: '⚠️';
+  content: '';
   display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--color-error);
 }
 
 .input-helper-text {
   font-size: var(--font-size-small);
   color: var(--color-text-muted);
   margin-top: var(--spacing-xs);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 /* ── Icons ─────────────────────────────────────────────────────────────── */
@@ -123,11 +131,23 @@
 /* ── Password Toggle ───────────────────────────────────────────────────── */
 
 .input-password-toggle {
+  right: 0.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
   background: none;
   border: none;
   cursor: pointer;
   padding: var(--spacing-sm);
   transition: color 0.2s ease;
+}
+
+.input-field[type='password']::-ms-reveal,
+.input-field[type='password']::-ms-clear {
+  display: none;
+}
+
+.input-container:has(.input-password-toggle) .input-field {
+  padding-right: calc(2.5rem + var(--spacing-md));
 }
 
 .input-password-toggle:hover {

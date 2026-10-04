@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import AdminPageHeader from '../../components/AdminPageHeader';
 
 const AdminSyllabus = () => {
   const [subjects, setSubjects] = useState([]);
@@ -49,7 +50,7 @@ const AdminSyllabus = () => {
     .admin-syllabus-wrap .section-sub { color:#475569 !important; }
     .admin-syllabus-wrap .table-scroll { width:100%;max-width:100%;overflow-x:auto; }
     .badge-1puc { background:rgba(37,99,235,0.15);color:#60a5fa; }
-    .badge-2puc { background:rgba(124,58,237,0.15);color:#a78bfa; }
+    .badge-2puc { background:rgba(230,95,0,0.12);color:var(--color-primary); }
     .badge-inactive { background:rgba(107,114,128,0.15);color:var(--muted); }
     .syllabus-table td { white-space:normal;word-break:break-word;overflow-wrap:anywhere;vertical-align:top; }
     .syllabus-table th { white-space:nowrap; }
@@ -91,11 +92,19 @@ const AdminSyllabus = () => {
   
 
   <div className="main-wrap admin-syllabus-wrap">
+    <AdminPageHeader
+      title="Syllabus Management"
+      description="Manage the official Karnataka PUC syllabus for all four subjects."
+      actions={<button className="btn-outline" id="refreshBtn" onClick={fetchSyllabus} disabled={loading}>
+        {loading ? <span className="btn-spinner" aria-hidden="true" /> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>}
+        {loading ? 'Refreshing...' : 'Refresh'}
+      </button>}
+    />
 
     
     <div className="section-card">
       <div className="section-card-header">
-        <div className="section-icon" style={{"background":"linear-gradient(135deg,rgba(124,58,237,0.2),rgba(37,99,235,0.2))"}}>
+        <div className="section-icon" style={{"background":"linear-gradient(135deg,rgba(230,95,0,0.12),rgba(255,240,227,0.8))"}}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
         </div>
         <div>
@@ -138,9 +147,6 @@ const AdminSyllabus = () => {
               <option value="">Both PUC</option>
               <option>1st PUC</option><option>2nd PUC</option>
             </select>
-          </div>
-          <div style={{"marginTop":"18px"}}>
-            <button className="btn-outline small" id="refreshBtn" onClick={fetchSyllabus}>Refresh</button>
           </div>
         </div>
       </div>
@@ -214,7 +220,7 @@ const AdminSyllabus = () => {
           <label className="input-label" htmlFor="mTextbook">Associated Textbook (PDF, DOCX, TXT)</label>
           <input type="file" id="mTextbook" className="text-input" accept=".pdf,.docx,.doc,.txt"/>
           <div id="mCurrentTextbookContainer" style={{"display":"none","marginTop":"6px","fontSize":"0.82rem","alignItems":"center","gap":"8px","color":"var(--muted)"}}>
-            <span>Current: <a id="mCurrentTextbookLink" href="#" target="_blank" style={{"color":"var(--purple-l)","textDecoration":"underline"}}></a></span>
+            <span>Current: <a id="mCurrentTextbookLink" href="#" target="_blank" style={{"color":"var(--color-primary)","textDecoration":"underline"}}></a></span>
             <button type="button" className="btn-outline small" id="mClearTextbookBtn" style={{"padding":"2px 6px","fontSize":"0.75rem","color":"var(--red-l)","borderColor":"var(--red-l)"}}>Clear</button>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdminCache, setAdminCache, clearAdminCache } from '../../utils/adminCache';
+import AdminPageHeader from '../../components/AdminPageHeader';
 
 const AdminQuestions = () => {
   const [filterSubject, setFilterSubject] = useState("");
@@ -174,9 +175,13 @@ const AdminQuestions = () => {
       <div className="bg-mesh"></div>
       
       <div className="main-wrap admin-questions-wrap">
+        <AdminPageHeader
+          title="Question Management"
+          description="Review and manage questions stored in the platform question bank."
+        />
         <div className="section-card">
           <div className="section-card-header">
-            <div className="section-icon purple">
+            <div className="section-icon orange">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             </div>
             <div>
@@ -254,7 +259,7 @@ const AdminQuestions = () => {
                     onClick={() => setShowClearConfirm(true)}
                     style={{ color: 'var(--red)', borderColor: 'rgba(239, 68, 68, 0.3)', padding: '6px 14px' }}
                   >
-                    🗑 Clear {filterSubject ? `${filterSubject} Questions` : 'All Questions'}
+                    Clear {filterSubject ? `${filterSubject} Questions` : 'All Questions'}
                   </button>
                 </div>
               )}
@@ -317,11 +322,10 @@ const AdminQuestions = () => {
 
           {loading ? (
             <div style={{ textAlign: 'center', padding: '50px', color: 'var(--muted)' }}>
-              ⏳ Loading stored questions from database...
+              Loading stored questions from database...
             </div>
           ) : questions.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--muted)' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📚</div>
               <h3 style={{ margin: '0 0 8px 0', color: 'var(--text)' }}>
                 {filterSubject ? `No ${filterSubject} Questions in Bank` : 'Your Question Bank is Clean (0 Questions)'}
               </h3>
@@ -332,7 +336,7 @@ const AdminQuestions = () => {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '16px', height: '16px' }}>
                   <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
                 </svg>
-                Upload Materials &amp; Generate Questions →
+                Upload Materials &amp; Generate Questions
               </Link>
             </div>
           ) : (
@@ -429,14 +433,14 @@ const AdminQuestions = () => {
                                   ({optLabels[optIdx]})
                                 </strong>
                                 <span>{opt}</span>
-                                {isCorrect && <span style={{ marginLeft: 'auto', color: '#10b981', fontSize: '0.75rem', fontWeight: 'bold' }}>✓ Correct</span>}
+                                {isCorrect && <span style={{ marginLeft: 'auto', color: '#10b981', fontSize: '0.75rem', fontWeight: 'bold' }}> Correct</span>}
                               </div>
                             );
                           })}
                         </div>
                         {q.explanation && (
                           <div style={{ fontSize: '0.82rem', color: 'var(--muted)', fontStyle: 'italic', background: 'rgba(59, 130, 246, 0.04)', padding: '8px 12px', borderRadius: '6px' }}>
-                            💡 <strong>Explanation:</strong> {q.explanation}
+                            <strong>Explanation:</strong> {q.explanation}
                           </div>
                         )}
                       </div>
@@ -507,7 +511,7 @@ const AdminQuestions = () => {
           <div style={{ position: "fixed", inset: "0", background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)", zIndex: "200", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
             <div style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--border)", borderRadius: "8px", padding: "28px", maxWidth: "440px", width: "100%", boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
               <h3 style={{ fontSize: "1.15rem", fontWeight: "700", marginBottom: "10px", color: '#ef4444' }}>
-                ⚠️ Clear {filterSubject ? `${filterSubject} Questions` : 'All Questions'}?
+                Warning  Clear {filterSubject ? `${filterSubject} Questions` : 'All Questions'}?
               </h3>
               <p style={{ color: "var(--muted)", fontSize: "0.88rem", marginBottom: "20px", lineHeight: 1.5 }}>
                 This will delete {filterSubject ? `all ${filterSubject}` : 'all'} questions from the Question Bank. Only new questions that you generate from the Upload section will be stored going forward.

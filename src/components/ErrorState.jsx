@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertIcon } from './index';
 import './ErrorState.css';
 
 /**
@@ -9,12 +10,13 @@ const ErrorState = ({
   title = 'Something went wrong',
   message = 'An error occurred while loading the content',
   action = null,
-  icon = '⚠️',
   className = '',
 }) => {
   return (
     <div className={`error-state ${className}`.trim()}>
-      <div className="error-icon">{icon}</div>
+      <div className="error-icon">
+        <AlertIcon size={40} style={{ color: 'var(--color-error)' }} />
+      </div>
       <h3 className="error-title">{title}</h3>
       <p className="error-message">{message}</p>
       {action && <div className="error-action">{action}</div>}

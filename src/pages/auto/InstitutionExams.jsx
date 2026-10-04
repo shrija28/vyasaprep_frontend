@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { getStoredExams, saveStoredExams, addStoredExam, deleteStoredExam, subscribeToExamChanges } from '../../utils/examStore';
+import Alert from '../../components/Alert';
+import Modal from '../../components/Modal';
+import { AnalyticsIcon, CrossIcon, EyeIcon, TrashIcon } from '../../components/icons';
 
 const InstitutionExams = () => {
   const [exams, setExams] = useState(getStoredExams());
@@ -8,8 +11,9 @@ const InstitutionExams = () => {
   const [questionCounts, setQuestionCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const [feedback, setFeedback] = useState(null);
+  const [pendingDeleteExam, setPendingDeleteExam] = useState(null);
+  const [deletingExam, setDeletingExam] = useState(false);
 
   // Form State
   const [examName, setExamName] = useState('');
@@ -30,6 +34,17 @@ const InstitutionExams = () => {
   const isMountedRef = useRef(true);
 
   useEffect(() => {
+    if (feedback?.variant !== 'success') return undefined;
+
+    const currentFeedback = feedback;
+    const timeoutId = window.setTimeout(() => {
+      setFeedback((activeFeedback) => activeFeedback === currentFeedback ? null : activeFeedback);
+    }, 4500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [feedback]);
+
+  useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
@@ -41,7 +56,7 @@ const InstitutionExams = () => {
     isFetchingRef.current = true;
     if (isMountedRef.current && !silent) {
       setLoading(true);
-      setError('');
+      setFeedback(null);
     }
     try {
       let profileData = instProfile;
@@ -134,7 +149,7 @@ const InstitutionExams = () => {
       } catch (qErr) {}
     } catch (err) {
       if (isMountedRef.current && !silent) {
-        setError('Failed to load exams and batch data');
+        setFeedback({ variant: 'error', message: 'Failed to load exams and batch data' });
       }
     } finally {
       isFetchingRef.current = false;
@@ -175,7 +190,7 @@ const InstitutionExams = () => {
 
   const fetchExamQuestions = async (examId) => {
     setLoadingQuestions(true);
-    setError('');
+    setFeedback(null);
     const targetExam = exams.find(e => e.exam_id === examId || e.id === examId || e.exam_name === examId) || { exam_id: examId, subject: 'Mathematics' };
     const examSubject = targetExam.subject || 'Mathematics';
 
@@ -226,11 +241,11 @@ const InstitutionExams = () => {
         });
         setActiveSetIndex(0);
       } else {
-        setError('Question data is unavailable for this exam.');
+        setFeedback({ variant: 'error', message: 'Question data is unavailable for this exam.' });
         setViewingQuestionsExam(null);
       }
     } catch {
-      setError('Unable to load questions for this exam.');
+      setFeedback({ variant: 'error', message: 'Unable to load questions for this exam.' });
       setViewingQuestionsExam(null);
     } finally {
       setLoadingQuestions(false);
@@ -252,20 +267,13 @@ const InstitutionExams = () => {
 
   const handleCreateExam = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
+    setFeedback(null);
     if (!examName.trim()) {
-      setError('Please enter an exam title before creating an exam.');
-      return;
-    }
-
-    const availableQuestions = Number(questionCounts[subject]);
-    if (Number.isFinite(availableQuestions) && availableQuestions < questionCount) {
-      setError(`Not enough unused questions available for ${subject} (${availableQuestions} available, ${questionCount} required). Please upload more question papers first.`);
+      setFeedback({ variant: 'error', message: 'Please enter an exam title before creating an exam.' });
       return;
     }
 
     setCreating(true);
-    setError('');
-    setSuccessMsg('');
 
     const currentInstId = instProfile?.institution_id || instProfile?.join_code || instProfile?.id || 'INST-LOCAL';
     const currentInstName = instProfile?.institution_name || instProfile?.name || instProfile?.username || 'Institution';
@@ -321,21 +329,22 @@ const InstitutionExams = () => {
         await fetchData();
         setFilterSubject('all');
         setFilterBatch('all');
-        setSuccessMsg(`Exam "${createdExamObj.exam_name}" was created${isPublished ? ' and published' : ' as a draft'}.`);
+        setFeedback({ variant: 'success', message: `Exam "${createdExamObj.exam_name}" was created${isPublished ? ' and published' : ' as a draft'}.` });
         setExamName('');
         setScheduledStart('');
         setScheduledEnd('');
       } else {
         const data = await res.json().catch(() => ({}));
         const apiError = data.message || data.detail || data.error;
-        setError(
-          typeof apiError === 'string'
+        setFeedback({
+          variant: 'error',
+          message: typeof apiError === 'string'
             ? apiError
-            : apiError?.message || 'The exam could not be created.'
-        );
+            : apiError?.message || 'The exam could not be created.',
+        });
       }
     } catch (err) {
-      setError('Network error creating the exam. No local exam was saved.');
+      setFeedback({ variant: 'error', message: 'Network error creating the exam. No local exam was saved.' });
     } finally {
       setCreating(false);
     }
@@ -347,7 +356,7 @@ const InstitutionExams = () => {
       saveStoredExams(updated);
       return updated;
     });
-    setSuccessMsg(`Exam status updated to ${!currentStatus ? 'Published' : 'Draft'}`);
+    setFeedback({ variant: 'success', message: `Exam status updated to ${!currentStatus ? 'Published' : 'Draft'}` });
     try {
       await fetch(`/api/institution/content/exams/${examId}`, {
         method: 'PATCH',
@@ -358,38 +367,50 @@ const InstitutionExams = () => {
     } catch {}
   };
 
-  const handleDeleteExam = async (examObjOrId, examName) => {
-    let targetId = '';
-    let nameToDisplay = examName || 'Selected Exam';
+  const handleDeleteExam = (exam) => {
+    setFeedback(null);
+    setPendingDeleteExam(exam);
+  };
 
-    if (typeof examObjOrId === 'object' && examObjOrId !== null) {
-      targetId = examObjOrId.exam_id || examObjOrId.id || examObjOrId.exam_name;
-      nameToDisplay = examObjOrId.exam_name || examObjOrId.name || nameToDisplay;
-    } else {
-      targetId = examObjOrId;
-    }
+  const confirmDeleteExam = async () => {
+    if (!pendingDeleteExam || deletingExam) return;
 
+    const targetId = pendingDeleteExam.exam_id || pendingDeleteExam.id;
     if (!targetId) return;
 
-    if (!window.confirm(`Delete exam "${nameToDisplay}"? This action cannot be undone.`)) return;
-
-    // Remove from persistent store and notify all components
-    const updated = deleteStoredExam(targetId);
-    setExams(updated);
-    setSuccessMsg(`Exam "${nameToDisplay}" deleted successfully.`);
+    setDeletingExam(true);
+    setFeedback(null);
 
     try {
-      let res = await fetch(`/api/institution/content/exams/${targetId}`, {
+      const response = await fetch(`/api/institution/content/exams/${targetId}`, {
         method: 'DELETE',
         credentials: 'include',
       });
-      if (!res.ok) {
-        await fetch(`/api/institution/exams/${targetId}`, {
-          method: 'DELETE',
-          credentials: 'include',
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || data.success !== true) {
+        const apiError = data.message || data.detail || data.error;
+        setPendingDeleteExam(null);
+        setFeedback({
+          variant: 'error',
+          message: typeof apiError === 'string'
+            ? apiError
+            : apiError?.message || 'The exam could not be deleted.',
         });
+        return;
       }
-    } catch {}
+
+      deleteStoredExam(targetId);
+      setExams((currentExams) => currentExams.filter((exam) => exam.exam_id !== targetId && exam.id !== targetId));
+      setPendingDeleteExam(null);
+      await fetchData(true);
+      setFeedback({ variant: 'success', message: 'Exam deleted successfully.' });
+    } catch {
+      setPendingDeleteExam(null);
+      setFeedback({ variant: 'error', message: 'Network error while deleting the exam. Refresh to check its status.' });
+    } finally {
+      setDeletingExam(false);
+    }
   };
 
   const filteredExams = exams.filter(ex => {
@@ -405,7 +426,7 @@ const InstitutionExams = () => {
     <>
       <div className="bg-mesh"></div>
 
-      <div className="main-wrap">
+      <div className="main-wrap institution-exams-page">
         <header className="institution-page-header" style={{ marginBottom: '24px' }}>
           <div>
             <h1 className="institution-page-title">
@@ -428,22 +449,21 @@ const InstitutionExams = () => {
           </div>
         </header>
 
-        {error && (
-          <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid var(--red)', borderRadius: '8px', padding: '12px 16px', marginBottom: '20px', color: 'var(--red-l)' }}>
-            {error}
-          </div>
-        )}
-
-        {successMsg && (
-          <div style={{ background: 'rgba(5,150,105,0.1)', border: '1px solid var(--green)', borderRadius: '8px', padding: '12px 16px', marginBottom: '20px', color: 'var(--green-l)' }}>
-            {successMsg}
-          </div>
+        {feedback && (
+          <Alert
+            key={`${feedback.variant}:${feedback.message}`}
+            className="institution-exam-feedback"
+            variant={feedback.variant}
+            onClose={() => setFeedback(null)}
+          >
+            {feedback.message}
+          </Alert>
         )}
 
         {/* 1. Test Builder Form */}
         <div className="section-card" style={{ marginBottom: '24px' }}>
           <div className="section-card-header">
-            <div className="section-icon" style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(37,99,235,0.2))' }}>
+            <div className="section-icon" style={{ background: 'linear-gradient(135deg, rgba(230, 95, 0, 0.2), rgba(37,99,235,0.2))' }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
             </div>
             <div>
@@ -585,13 +605,13 @@ const InstitutionExams = () => {
             {loading ? (
               <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>Loading scheduled exams...</div>
             ) : filteredExams.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '50px 20px', color: 'var(--muted)' }}>
+              <div className="institution-exams-empty">
                 <h3>No Exams Scheduled Yet</h3>
                 <p style={{ marginTop: '6px' }}>Use the Test Builder above to create your first weekly test.</p>
               </div>
             ) : (
               <div className="table-scroll">
-                <table className="results-table">
+                <table className="results-table institution-exams-table">
                   <thead>
                     <tr>
                       <th>Exam Name</th>
@@ -607,45 +627,29 @@ const InstitutionExams = () => {
                     {filteredExams.map((exam) => (
                       <tr key={exam.exam_id}>
                         <td>
-                          <div style={{ fontWeight: 600, color: 'var(--text)' }}>
+                          <div className="institution-exams-name">
                             {exam.exam_name || 'Weekly Exam'}
                           </div>
-                          <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
+                          <span className="institution-exams-created">
                             Created {exam.created_at ? new Date(exam.created_at).toLocaleDateString() : '—'}
                           </span>
                         </td>
                         <td>
-                          <span style={{
-                            fontSize: '0.8rem',
-                            padding: '3px 8px',
-                            borderRadius: '4px',
-                            background: 'rgba(59, 130, 246, 0.1)',
-                            color: 'var(--blue)',
-                            fontWeight: 500,
-                          }}>
+                          <span className="institution-exams-subject">
                             {exam.subject}
                           </span>
                         </td>
-                        <td style={{ fontSize: '0.85rem' }}>
+                        <td className="institution-exams-meta">
                           <strong>{exam.duration_minutes}m</strong> • {exam.total_marks} Marks
                         </td>
-                        <td style={{ fontSize: '0.85rem' }}>
-                          <span style={{ color: 'var(--muted)' }}>4 Sets (A-D)</span>
+                        <td className="institution-exams-meta">
+                          <span>4 Sets (A-D)</span>
                         </td>
                         <td>
                           <button
                             type="button"
                             onClick={() => handleTogglePublish(exam.exam_id, exam.is_published)}
-                            style={{
-                              border: 'none',
-                              cursor: 'pointer',
-                              padding: '4px 10px',
-                              borderRadius: '12px',
-                              fontSize: '0.78rem',
-                              fontWeight: 600,
-                              background: exam.is_published ? 'rgba(16, 185, 129, 0.15)' : 'rgba(234, 179, 8, 0.15)',
-                              color: exam.is_published ? '#10b981' : '#eab308',
-                            }}
+                            className={`institution-exams-status ${exam.is_published ? 'is-published' : 'is-draft'}`}
                             title="Click to toggle status"
                           >
                             {exam.is_published ? '● Published' : '○ Draft'}
@@ -654,31 +658,32 @@ const InstitutionExams = () => {
                         <td style={{ fontSize: '0.88rem' }}>
                           <strong style={{ color: 'var(--text)' }}>{exam.completion_count || 0}</strong> completed
                         </td>
-                        <td style={{ textAlign: 'right' }}>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', alignItems: 'center' }}>
+                        <td className="institution-exams-actions-cell">
+                          <div className="institution-exams-actions">
                             <button
                               type="button"
-                              className="btn-institution-outline"
+                              className="institution-exam-action institution-exam-action-view"
                               onClick={() => fetchExamQuestions(exam.exam_id)}
                               disabled={loadingQuestions}
-                              style={{ padding: '4px 10px', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--purple-l)' }}
                               title="View questions assigned to this test"
                             >
-                              👁 View Questions
+                              <EyeIcon size={14} />
+                              View Questions
                             </button>
                             <Link
                               to={`/institution/analytics?exam_id=${exam.exam_id}`}
-                              className="btn-institution-outline"
-                              style={{ padding: '4px 8px', fontSize: '0.78rem' }}
+                              className="institution-exam-action institution-exam-action-results"
                             >
+                              <AnalyticsIcon size={14} />
                               Results
                             </Link>
                             <button
                               type="button"
+                              className="institution-exam-action institution-exam-action-delete"
                               onClick={() => handleDeleteExam(exam)}
-                              style={{ background: 'none', border: 'none', color: 'var(--red-l)', cursor: 'pointer', fontSize: '0.8rem' }}
                               title="Delete Exam"
                             >
+                              <TrashIcon size={14} />
                               Delete
                             </button>
                           </div>
@@ -692,6 +697,51 @@ const InstitutionExams = () => {
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={Boolean(pendingDeleteExam)}
+        onClose={() => {
+          if (!deletingExam) setPendingDeleteExam(null);
+        }}
+        title="Delete Exam?"
+        size="sm"
+        className="institution-exam-delete-modal"
+        closeButton={false}
+        footer={(
+          <>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setPendingDeleteExam(null)}
+              disabled={deletingExam}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn btn-danger"
+              onClick={confirmDeleteExam}
+              disabled={deletingExam}
+            >
+              <TrashIcon size={16} />
+              {deletingExam ? 'Deleting...' : 'Delete Exam'}
+            </button>
+          </>
+        )}
+      >
+        <div className="institution-delete-confirmation">
+          <span className="institution-delete-confirmation-icon" aria-hidden="true">
+            <TrashIcon size={20} />
+          </span>
+          <div>
+            <p>
+              Are you sure you want to delete{' '}
+              <strong>{pendingDeleteExam?.exam_name || pendingDeleteExam?.name || 'this exam'}</strong>?
+            </p>
+            <p className="institution-delete-confirmation-note">This action cannot be undone.</p>
+          </div>
+        </div>
+      </Modal>
 
       {/* View Exam Questions Modal */}
       {viewingQuestionsExam && (
@@ -732,7 +782,7 @@ const InstitutionExams = () => {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
                   <h2 style={{ fontSize: '1.2rem', margin: 0, color: 'var(--text)' }}>{viewingQuestionsExam.exam_name}</h2>
-                  <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(124,58,237,0.15)', color: 'var(--purple-l)', fontWeight: 600 }}>
+                  <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(230, 95, 0, 0.15)', color: 'var(--color-primary)', fontWeight: 600 }}>
                     {viewingQuestionsExam.subject}
                   </span>
                 </div>
@@ -741,10 +791,13 @@ const InstitutionExams = () => {
                 </p>
               </div>
               <button
+                type="button"
+                aria-label="Close exam questions"
+                title="Close exam questions"
                 onClick={() => setViewingQuestionsExam(null)}
-                style={{ background: 'none', border: 'none', fontSize: '1.4rem', cursor: 'pointer', color: 'var(--muted)' }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
               >
-                ✕
+                <CrossIcon size={18} />
               </button>
             </div>
 
@@ -758,8 +811,8 @@ const InstitutionExams = () => {
                     padding: '12px 20px',
                     border: 'none',
                     background: 'transparent',
-                    borderBottom: activeSetIndex === idx ? '2px solid var(--purple-l)' : '2px solid transparent',
-                    color: activeSetIndex === idx ? 'var(--purple-l)' : 'var(--muted)',
+                    borderBottom: activeSetIndex === idx ? '2px solid var(--color-primary)' : '2px solid transparent',
+                    color: activeSetIndex === idx ? 'var(--color-primary)' : 'var(--muted)',
                     fontWeight: activeSetIndex === idx ? 700 : 500,
                     fontSize: '0.88rem',
                     cursor: 'pointer'
@@ -785,7 +838,7 @@ const InstitutionExams = () => {
                       }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
-                        <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--purple-l)' }}>
+                        <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-primary)' }}>
                           Question #{qIdx + 1}
                         </span>
                         <span style={{ fontSize: '0.75rem', color: 'var(--muted)', background: 'var(--s3)', padding: '2px 8px', borderRadius: '4px' }}>
@@ -814,7 +867,7 @@ const InstitutionExams = () => {
                                 fontWeight: isCorrect ? 600 : 400
                               }}
                             >
-                              <strong style={{ marginRight: '6px' }}>{String.fromCharCode(65 + oIdx)}.</strong> {opt} {isCorrect && '✓ (Correct)'}
+                              <strong style={{ marginRight: '6px' }}>{String.fromCharCode(65 + oIdx)}.</strong> {opt} {isCorrect && ' (Correct)'}
                             </div>
                           );
                         })}

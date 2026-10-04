@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { deleteStoredExam } from '../../utils/examStore';
 import { getAdminCache, setAdminCache, clearAdminCache } from '../../utils/adminCache';
+import AdminPageHeader from '../../components/AdminPageHeader';
 
 const AdminExams = () => {
   const cachedExams = getAdminCache('admin_exams_data');
@@ -95,7 +96,7 @@ const AdminExams = () => {
         return;
       }
 
-      setMessage(`✓ Exam "${data.exam_name || 'KCET ' + subject + ' Exam'}" created successfully with 60 questions from Question Bank!`);
+      setMessage(` Exam "${data.exam_name || 'KCET ' + subject + ' Exam'}" created successfully with 60 questions from Question Bank!`);
       setIsError(false);
       setSubject('');
       clearAdminCache('admin_exams_data');
@@ -256,9 +257,13 @@ const AdminExams = () => {
       <div className="bg-mesh"></div>
       
       <div className="main-wrap admin-exams-wrap">
+        <AdminPageHeader
+          title="Exam Management"
+          description="Create and manage platform exams and their assigned question sets."
+        />
         <div className="section-card">
           <div className="section-card-header">
-            <div className="section-icon" style={{"background":"linear-gradient(135deg,rgba(124,58,237,0.2),rgba(37,99,235,0.2))"}}>
+            <div className="section-icon" style={{"background":"linear-gradient(135deg,rgba(230,95,0,0.12),rgba(255,240,227,0.8))"}}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
             </div>
             <div>
@@ -350,11 +355,11 @@ const AdminExams = () => {
                             padding: '3px 9px',
                             borderRadius: '12px',
                             fontSize: '0.78rem',
-                            background: 'rgba(124, 58, 237, 0.15)',
-                            color: 'var(--purple-l)',
+                            background: 'rgba(230, 95, 0, 0.12)',
+                            color: 'var(--color-primary)',
                             fontWeight: 600
                           }}>
-                            👑 Main Admin
+                            Main Admin
                           </span>
                         </td>
                         <td>{exam.sets === 1 ? '60 Questions (1 Set)' : `${exam.sets * 60} Qs (${exam.sets} Sets)`}</td>
@@ -451,7 +456,7 @@ const AdminExams = () => {
               }}>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--blue)' }}>
-                    📋 {inspectData ? inspectData.exam_name : 'Loading Exam...'}
+                    {inspectData ? inspectData.exam_name : 'Loading Exam...'}
                   </h3>
                   {inspectData && (
                     <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
@@ -469,7 +474,6 @@ const AdminExams = () => {
                     color: 'var(--muted)'
                   }}
                 >
-                  ✕
                 </button>
               </div>
 
@@ -477,7 +481,7 @@ const AdminExams = () => {
               <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
                 {inspectLoading ? (
                   <div style={{ textAlign: 'center', padding: '50px', color: 'var(--muted)' }}>
-                    ⏳ Loading exam sets and assigned questions...
+                    Loading exam sets and assigned questions...
                   </div>
                 ) : inspectError ? (
                   <div style={{ textAlign: 'center', padding: '50px 20px', color: 'var(--red)' }}>
@@ -580,7 +584,7 @@ const AdminExams = () => {
                                       </strong>
                                       {opt}
                                       {isCorrect && (
-                                        <span style={{ float: 'right', color: '#10b981', fontWeight: 'bold', fontSize: '0.75rem' }}>✓</span>
+                                        <span style={{ float: 'right', color: '#10b981', fontWeight: 'bold', fontSize: '0.75rem' }}></span>
                                       )}
                                     </div>
                                   );
@@ -589,7 +593,7 @@ const AdminExams = () => {
 
                               {q.explanation && (
                                 <div style={{ marginTop: '8px', fontSize: '0.8rem', color: 'var(--muted)', fontStyle: 'italic' }}>
-                                  💡 <strong>Explanation:</strong> {q.explanation}
+                                  <strong>Explanation:</strong> {q.explanation}
                                 </div>
                               )}
                             </div>

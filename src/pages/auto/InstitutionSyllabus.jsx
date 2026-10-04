@@ -1,37 +1,38 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { BiologyIcon, ChemistryIcon, MathematicsIcon, PhysicsIcon, SearchIcon } from '../../components/icons';
 
 const SUBJECT_CONFIG = {
   Physics: {
     name: 'Physics',
-    icon: '⚡',
-    color: '#38bdf8',
-    bgBadge: 'rgba(56, 189, 248, 0.12)',
-    borderBadge: 'rgba(56, 189, 248, 0.3)',
-    gradient: 'linear-gradient(135deg, #0284c7, #2563eb)'
+    icon: PhysicsIcon,
+    color: 'var(--color-navy)',
+    bgBadge: 'rgba(26, 54, 93, 0.08)',
+    borderBadge: 'rgba(26, 54, 93, 0.24)',
+    gradient: 'linear-gradient(135deg, #1A365D, #2D4C73)'
   },
   Chemistry: {
     name: 'Chemistry',
-    icon: '🧪',
-    color: '#34d399',
-    bgBadge: 'rgba(52, 211, 153, 0.12)',
-    borderBadge: 'rgba(52, 211, 153, 0.3)',
+    icon: ChemistryIcon,
+    color: 'var(--color-success)',
+    bgBadge: 'rgba(5, 150, 105, 0.1)',
+    borderBadge: 'rgba(5, 150, 105, 0.3)',
     gradient: 'linear-gradient(135deg, #059669, #0d9488)'
   },
   Mathematics: {
     name: 'Mathematics',
-    icon: '📐',
-    color: '#c084fc',
-    bgBadge: 'rgba(192, 132, 252, 0.12)',
-    borderBadge: 'rgba(192, 132, 252, 0.3)',
-    gradient: 'linear-gradient(135deg, #7c3aed, #4f46e5)'
+    icon: MathematicsIcon,
+    color: 'var(--color-primary)',
+    bgBadge: 'rgba(230, 95, 0, 0.12)',
+    borderBadge: 'rgba(230, 95, 0, 0.3)',
+    gradient: 'linear-gradient(135deg, #E65F00, #B34A00)'
   },
   Biology: {
     name: 'Biology',
-    icon: '🌱',
-    color: '#fbbf24',
-    bgBadge: 'rgba(251, 191, 36, 0.12)',
-    borderBadge: 'rgba(251, 191, 36, 0.3)',
-    gradient: 'linear-gradient(135deg, #d97706, #b45309)'
+    icon: BiologyIcon,
+    color: '#B34A00',
+    bgBadge: 'rgba(246, 196, 83, 0.18)',
+    borderBadge: 'rgba(179, 74, 0, 0.25)',
+    gradient: 'linear-gradient(135deg, #E65F00, #B34A00)'
   }
 };
 
@@ -119,13 +120,13 @@ const InstitutionSyllabus = () => {
     <>
       <div className="bg-mesh"></div>
 
-      <main className="main-wrap" style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 20px 80px' }}>
+      <main className="main-wrap" style={{ padding: '24px 20px 80px' }}>
         {/* Main Section Card */}
         <div className="section-card" style={{ padding: '24px', borderRadius: '16px', background: 'var(--s1)', border: '1px solid var(--border)' }}>
           {/* Header */}
           <div className="section-card-header" style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' }}>
-            <div className="section-icon" style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(37,99,235,0.25))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '22px', height: '22px', color: 'var(--purple-l, #a78bfa)' }}>
+            <div className="section-icon" style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'linear-gradient(135deg, rgba(230, 95, 0, 0.25), rgba(37,99,235,0.25))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '22px', height: '22px', color: 'var(--color-primary, #F87B4A)' }}>
                 <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
               </svg>
             </div>
@@ -153,6 +154,7 @@ const InstitutionSyllabus = () => {
 
             {Object.keys(SUBJECT_CONFIG).map(subjKey => {
               const cfg = SUBJECT_CONFIG[subjKey];
+              const Icon = cfg.icon;
               const stat = summaryStats.perSubject[subjKey] || { p1: '?', p2: '?', total: '?' };
               const isSelected = activeSubject === subjKey;
 
@@ -174,7 +176,7 @@ const InstitutionSyllabus = () => {
                     {stat.p1}+{stat.p2}
                   </div>
                   <div style={{ fontSize: '0.75rem', fontWeight: 600, color: isSelected ? cfg.color : 'var(--muted)', marginTop: '2px' }}>
-                    {cfg.icon} {subjKey}
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><Icon size={16} />{subjKey}</span>
                   </div>
                 </div>
               );
@@ -198,6 +200,7 @@ const InstitutionSyllabus = () => {
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {Object.keys(SUBJECT_CONFIG).map(subj => {
                 const cfg = SUBJECT_CONFIG[subj];
+                const Icon = cfg.icon;
                 const isActive = activeSubject === subj;
                 return (
                   <button
@@ -220,7 +223,7 @@ const InstitutionSyllabus = () => {
                       transition: 'all 0.15s ease'
                     }}
                   >
-                    <span>{cfg.icon}</span>
+                    <Icon size={16} />
                     <span>{subj}</span>
                   </button>
                 );
@@ -239,7 +242,7 @@ const InstitutionSyllabus = () => {
                       padding: '4px 10px',
                       borderRadius: '6px',
                       border: 'none',
-                      background: selectedPuc === puc ? 'var(--purple, #7c3aed)' : 'transparent',
+                      background: selectedPuc === puc ? 'var(--color-primary, #E65F00)' : 'transparent',
                       color: selectedPuc === puc ? '#fff' : 'var(--muted)',
                       fontSize: '0.78rem',
                       fontWeight: selectedPuc === puc ? 700 : 500,
@@ -273,14 +276,14 @@ const InstitutionSyllabus = () => {
           <div id="syllabusContent">
             {loading && (
               <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--muted)' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '10px' }}>⏳</div>
+                <span className="btn-spinner" aria-hidden="true" style={{ width: '24px', height: '24px', marginBottom: '10px', color: 'var(--color-primary)' }} />
                 <div style={{ fontWeight: 600 }}>Loading official syllabus...</div>
               </div>
             )}
 
             {error && !loading && (
               <div style={{ padding: '16px 20px', background: 'rgba(239,68,68,0.1)', border: '1px solid var(--red)', borderRadius: '12px', color: 'var(--red)', textAlign: 'center' }}>
-                <p style={{ fontWeight: 600, margin: 0 }}>⚠️ {error}</p>
+                <p style={{ fontWeight: 600, margin: 0 }}>Warning  {error}</p>
                 <button
                   type="button"
                   className="btn-outline small"
@@ -294,7 +297,7 @@ const InstitutionSyllabus = () => {
 
             {!loading && !error && filteredPucYears.length === 0 && (
               <div style={{ textAlign: 'center', padding: '50px 20px', color: 'var(--muted)' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>🔍</div>
+                <div style={{ marginBottom: '8px', color: 'var(--color-primary)' }}><SearchIcon size={32} /></div>
                 <div style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--text)' }}>No chapters found</div>
                 <p style={{ fontSize: '0.86rem', marginTop: '4px' }}>No chapters match your search query "{searchQuery}".</p>
                 <button
@@ -319,7 +322,7 @@ const InstitutionSyllabus = () => {
                   const is1stPuc = puc.puc_year === '1st PUC';
                   const pucBadgeColor = is1stPuc
                     ? { bg: 'rgba(37, 99, 235, 0.15)', text: '#60a5fa', border: 'rgba(37, 99, 235, 0.3)' }
-                    : { bg: 'rgba(168, 85, 247, 0.15)', text: '#c084fc', border: 'rgba(168, 85, 247, 0.3)' };
+                    : { bg: 'rgba(230, 95, 0, 0.15)', text: '#F87B4A', border: 'rgba(230, 95, 0, 0.3)' };
 
                   return (
                     <div

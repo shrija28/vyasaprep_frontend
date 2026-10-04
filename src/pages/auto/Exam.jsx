@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { generateStudentId, getAssignedSetForStudent } from '../../utils/studentId';
+import BrandLogo from '../../components/BrandLogo';
+import { AIIcon, AlertIcon, BooksIcon, CameraIcon, ExamIcon, InstitutionsIcon, LockIcon, QuestionsIcon, SirenIcon } from '../../components/icons';
+import { generateStudentId } from '../../utils/studentId';
 import { normalizeExamSubjects } from '../../utils/examStore';
+import { flattenStudentExams, getStudentExamState } from '../../utils/studentExamAccess';
 
 // High-precision face & liveness analyzer that verifies an actual human face is present
 // and strictly rejects covered cameras, black frames, blank walls, and Windows "Camera Off" placeholders.
@@ -163,333 +166,21 @@ const analyzeFaceInVideo = async (video, prevFrameRef) => {
   }
 };
 
-const getFallbackQuestionsForSubject = (subj = 'Biology', examTitle = '') => {
-  const normalized = String(subj || examTitle || '').toLowerCase();
-
-  if (normalized.includes('bio')) {
-    return [
-      {
-        id: 'q1',
-        text: 'Which cell organelle is known as the powerhouse of the cell due to ATP synthesis?',
-        options: ['Mitochondria', 'Lysosome', 'Golgi Apparatus', 'Endoplasmic Reticulum'],
-        topic: 'Cell Biology',
-        subtype: 'theory_definition',
-        explanation: 'Mitochondria generate ATP through oxidative phosphorylation during cellular respiration.',
-        marks: 1
-      },
-      {
-        id: 'q2',
-        text: 'In DNA double-helix structure, Adenine forms hydrogen bonds specifically with:',
-        options: ['Thymine', 'Cytosine', 'Guanine', 'Uracil'],
-        topic: 'Molecular Genetics',
-        subtype: 'theory_definition',
-        explanation: 'According to Chargaff rules, Adenine pairs with Thymine via two hydrogen bonds in DNA.',
-        marks: 1
-      },
-      {
-        id: 'q3',
-        text: 'Which plant hormone is primarily responsible for apical dominance and cell elongation in shoot tips?',
-        options: ['Auxin (IAA)', 'Gibberellin', 'Cytokinin', 'Abscisic Acid (ABA)'],
-        topic: 'Plant Physiology',
-        subtype: 'theory_definition',
-        explanation: 'Auxin synthesized in shoot apical meristems promotes stem elongation and inhibits lateral buds.',
-        marks: 1
-      },
-      {
-        id: 'q4',
-        text: 'The structural and functional unit of the human kidney responsible for filtration and reabsorption is the:',
-        options: ['Nephron', 'Neuron', 'Alveolus', 'Glomerulus'],
-        topic: 'Human Physiology',
-        subtype: 'theory_definition',
-        explanation: 'Each human kidney contains approximately one million nephrons that produce urine.',
-        marks: 1
-      },
-      {
-        id: 'q5',
-        text: 'In green plants, the light-dependent reactions of photosynthesis occur in which region of the chloroplast?',
-        options: ['Thylakoid Membrane', 'Stroma', 'Outer Membrane', 'Cristae'],
-        topic: 'Photosynthesis',
-        subtype: 'theory_definition',
-        explanation: 'Thylakoid membranes contain Photosystems I and II where solar energy is absorbed to produce ATP and NADPH.',
-        marks: 1
-      },
-      {
-        id: 'q6',
-        text: 'Which enzyme unwinds the double-stranded DNA molecule during replication?',
-        options: ['DNA Helicase', 'DNA Polymerase III', 'DNA Ligase', 'RNA Primase'],
-        topic: 'Molecular Biology',
-        subtype: 'theory_definition',
-        explanation: 'DNA Helicase breaks hydrogen bonds between nitrogenous bases to unzip the double helix.',
-        marks: 1
-      },
-      {
-        id: 'q7',
-        text: 'The plant vascular tissue responsible for the translocation of organic food substances (photosynthates) is:',
-        options: ['Phloem', 'Xylem', 'Parenchyma', 'Cambium'],
-        topic: 'Plant Anatomy',
-        subtype: 'theory_definition',
-        explanation: 'Phloem sieve tubes transport sucrose and amino acids from photosynthetic source leaves to sink organs.',
-        marks: 1
-      },
-      {
-        id: 'q8',
-        text: 'Which hormone secreted by the pancreas lowers blood glucose concentration by promoting cellular uptake?',
-        options: ['Insulin', 'Glucagon', 'Somatostatin', 'Adrenaline'],
-        topic: 'Endocrine System',
-        subtype: 'theory_definition',
-        explanation: 'Beta cells of the Islets of Langerhans release insulin in response to elevated blood glucose levels.',
-        marks: 1
-      },
-      {
-        id: 'q9',
-        text: 'In an ecological pyramid of energy, approximately what percentage of energy is transferred to the next trophic level?',
-        options: ['10%', '50%', '25%', '90%'],
-        topic: 'Ecology',
-        subtype: 'theory_definition',
-        explanation: 'According to Lindeman 10% Energy Law, only ~10% of total energy passes to successive trophic levels.',
-        marks: 1
-      },
-      {
-        id: 'q10',
-        text: 'The molecular scissors extensively used in recombinant DNA technology to cut DNA at specific palindromic sequences are:',
-        options: ['Restriction Endonucleases', 'DNA Ligases', 'Reverse Transcriptases', 'Taq Polymerases'],
-        topic: 'Biotechnology',
-        subtype: 'theory_definition',
-        explanation: 'Restriction endonucleases recognize specific palindromic sequences and cleave double-stranded DNA.',
-        marks: 1
-      }
-    ];
-  }
-
-  if (normalized.includes('phys')) {
-    return [
-      {
-        id: 'q1',
-        text: "According to Snell's Law of refraction, the ratio sin(i) / sin(r) is equal to:",
-        options: ["Refractive index of medium 2 with respect to medium 1", "Speed of light in vacuum", "Critical angle of medium", "Focal length of lens"],
-        topic: "Optics",
-        subtype: "theory_definition",
-        explanation: "Snell's Law states sin(i)/sin(r) = n2/n1.",
-        marks: 1
-      },
-      {
-        id: 'q2',
-        text: "The SI unit of magnetic flux density (B) is:",
-        options: ["Tesla (T)", "Weber (Wb)", "Henry (H)", "Gauss (G)"],
-        topic: "Electromagnetism",
-        subtype: "theory_definition",
-        explanation: "1 Tesla = 1 Weber per square meter (Wb/m²).",
-        marks: 1
-      },
-      {
-        id: 'q3',
-        text: "In a simple harmonic motion (SHM), the total mechanical energy is proportional to:",
-        options: ["Square of Amplitude (A²)", "Amplitude (A)", "Frequency (f)", "Square root of Amplitude (√A)"],
-        topic: "Harmonic Motion",
-        subtype: "theory_definition",
-        explanation: "Total SHM energy E = (1/2) m ω² A², proportional to A².",
-        marks: 1
-      },
-      {
-        id: 'q4',
-        text: "The phenomenon responsible for the brilliant colors in thin soap bubbles is:",
-        options: ["Thin-film Interference", "Diffraction", "Polarization", "Refraction"],
-        topic: "Wave Optics",
-        subtype: "theory_definition",
-        explanation: "Interference of light reflected from front and back surfaces creates spectral color bands.",
-        marks: 1
-      },
-      {
-        id: 'q5',
-        text: "Self-inductance of a long solenoid carrying current is directly proportional to:",
-        options: ["Square of total number of turns (N²)", "Number of turns (N)", "Current (I)", "Flux density B"],
-        topic: "Electromagnetic Induction",
-        subtype: "theory_definition",
-        explanation: "L = (μ0 N² A) / l, hence self-inductance scales as N².",
-        marks: 1
-      }
-    ];
-  }
-
-  if (normalized.includes('chem')) {
-    return [
-      {
-        id: 'q1',
-        text: "Which element has the highest electronegativity on the Pauling scale?",
-        options: ["Fluorine (F)", "Oxygen (O)", "Chlorine (Cl)", "Nitrogen (N)"],
-        topic: "Periodic Trends",
-        subtype: "theory_definition",
-        explanation: "Fluorine is the most electronegative element with a Pauling electronegativity of 3.98.",
-        marks: 1
-      },
-      {
-        id: 'q2',
-        text: "The molecular geometry and bond angle of methane (CH4) according to VSEPR theory are:",
-        options: ["Tetrahedral, 109.5°", "Trigonal Planar, 120°", "Linear, 180°", "Pyramidal, 107°"],
-        topic: "Chemical Bonding",
-        subtype: "theory_definition",
-        explanation: "CH4 has 4 bond pairs and 0 lone pairs around carbon, giving sp3 tetrahedral geometry.",
-        marks: 1
-      },
-      {
-        id: 'q3',
-        text: "According to Le Chatelier's Principle, increasing total pressure on a gaseous equilibrium system shifts position toward:",
-        options: ["Side with fewer moles of gas", "Side with greater moles of gas", "Reactants side always", "Products side always"],
-        topic: "Chemical Equilibrium",
-        subtype: "theory_definition",
-        explanation: "Increasing pressure favors the reaction direction that reduces total gas volume/moles.",
-        marks: 1
-      },
-      {
-        id: 'q4',
-        text: "The hybridization state of carbon atoms in a benzene ring (C6H6) is:",
-        options: ["sp2", "sp3", "sp", "sp3d"],
-        topic: "Organic Chemistry",
-        subtype: "theory_definition",
-        explanation: "Each carbon in benzene forms 3 sigma bonds in a planar hexagonal structure (sp2).",
-        marks: 1
-      },
-      {
-        id: 'q5',
-        text: "Which gas is evolved when sodium bicarbonate reacts with dilute hydrochloric acid?",
-        options: ["Carbon Dioxide (CO2)", "Hydrogen (H2)", "Oxygen (O2)", "Chlorine (Cl2)"],
-        topic: "Inorganic Chemistry",
-        subtype: "theory_definition",
-        explanation: "NaHCO3 + HCl → NaCl + H2O + CO2(g) ↑.",
-        marks: 1
-      }
-    ];
-  }
-
-  if (normalized.includes('math')) {
-    return [
-      {
-        id: 'q1',
-        text: "What is the derivative of f(x) = sin(x²) with respect to x?",
-        options: ["2x cos(x²)", "cos(x²)", "-2x cos(x²)", "2x sin(x²)"],
-        topic: "Differential Calculus",
-        subtype: "theory_definition",
-        explanation: "By chain rule: d/dx[sin(x²)] = cos(x²) · d/dx[x²] = 2x cos(x²).",
-        marks: 1
-      },
-      {
-        id: 'q2',
-        text: "The indefinite integral ∫ (1 / x) dx for x ≠ 0 is equal to:",
-        options: ["ln|x| + C", "-1 / x² + C", "e^x + C", "x ln(x) + C"],
-        topic: "Integral Calculus",
-        subtype: "theory_definition",
-        explanation: "The antiderivative of 1/x is natural logarithm ln|x| plus constant C.",
-        marks: 1
-      },
-      {
-        id: 'q3',
-        text: "If vectors A and B are mutually perpendicular, their dot product A · B is:",
-        options: ["0", "1", "|A||B|", "-1"],
-        topic: "Vector Algebra",
-        subtype: "theory_definition",
-        explanation: "A · B = |A||B| cos(90°) = 0.",
-        marks: 1
-      },
-      {
-        id: 'q4',
-        text: "The order and degree of the differential equation d²y/dx² + (dy/dx)³ = 0 are:",
-        options: ["Order 2, Degree 1", "Order 2, Degree 3", "Order 1, Degree 3", "Order 3, Degree 2"],
-        topic: "Differential Equations",
-        subtype: "theory_definition",
-        explanation: "Highest order derivative present is 2nd derivative (order 2), raised to power 1 (degree 1).",
-        marks: 1
-      },
-      {
-        id: 'q5',
-        text: "The value of determinant | 1  2 | / | 3  4 | is:",
-        options: ["-2", "2", "-10", "10"],
-        topic: "Determinants",
-        subtype: "theory_definition",
-        explanation: "(1*4) - (2*3) = 4 - 6 = -2.",
-        marks: 1
-      }
-    ];
-  }
-
-  // Fallback General Science questions
-  return [
-    {
-      id: 'q1',
-      text: 'Which organelle is known as the powerhouse of the cell due to ATP synthesis?',
-      options: ['Mitochondria', 'Lysosome', 'Golgi Apparatus', 'Endoplasmic Reticulum'],
-      topic: 'Cell Biology',
-      subtype: 'theory_definition',
-      explanation: 'Mitochondria generate ATP through oxidative phosphorylation during cellular respiration.',
-      marks: 1
-    },
-    {
-      id: 'q2',
-      text: "According to Snell's Law of refraction, the ratio sin(i) / sin(r) is equal to:",
-      options: ["Refractive index of medium 2 with respect to medium 1", "Speed of light in vacuum", "Critical angle of medium", "Focal length of lens"],
-      topic: "Optics",
-      subtype: "theory_definition",
-      explanation: "Snell's Law states sin(i)/sin(r) = n2/n1.",
-      marks: 1
-    },
-    {
-      id: 'q3',
-      text: "Which element has the highest electronegativity on the Pauling scale?",
-      options: ["Fluorine (F)", "Oxygen (O)", "Chlorine (Cl)", "Nitrogen (N)"],
-      topic: "Periodic Trends",
-      subtype: "theory_definition",
-      explanation: "Fluorine is the most electronegative element with a Pauling electronegativity of 3.98.",
-      marks: 1
-    },
-    {
-      id: 'q4',
-      text: "What is the derivative of f(x) = sin(x²) with respect to x?",
-      options: ["2x cos(x²)", "cos(x²)", "-2x cos(x²)", "2x sin(x²)"],
-      topic: "Differential Calculus",
-      subtype: "theory_definition",
-      explanation: "By chain rule: d/dx[sin(x²)] = cos(x²) · d/dx[x²] = 2x cos(x²).",
-      marks: 1
-    }
-  ];
-};
-
-const checkExamSubmitted = (setOrExamId, examTitle, examSubj, studentId = '') => {
-  try {
-    const activeStudentId = studentId || localStorage.getItem('vyasaprep_active_student_id') || '';
-    if (!activeStudentId || activeStudentId === 'Loading...') {
-      return null;
-    }
-    const subs = JSON.parse(localStorage.getItem('vyasaprep_submissions') || '[]');
-    return subs.find(s => 
-      s &&
-      s.student_id &&
-      String(s.student_id).toLowerCase().trim() === String(activeStudentId).toLowerCase().trim() &&
-      (
-        (setOrExamId && (s.exam_set_id === setOrExamId || s.exam_id === setOrExamId)) ||
-        (examTitle && s.exam_name && String(s.exam_name).toLowerCase().trim() === String(examTitle).toLowerCase().trim() && (!examSubj || String(s.subject).toLowerCase().trim() === String(examSubj).toLowerCase().trim()))
-      )
-    );
-  } catch (e) {
-    return null;
-  }
-};
-
 const Exam = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const [examSetId, setExamSetId] = useState(searchParams.get('set') || '');
   const [subject, setSubject] = useState(searchParams.get('subject') || 'General');
   const [examName, setExamName] = useState(searchParams.get('name') || 'KCET Exam');
-  const [setLabel, setSetLabel] = useState(searchParams.get('label') || 'A');
-
   const [alreadyCompleted, setAlreadyCompleted] = useState(false);
-  const [completedSubmission, setCompletedSubmission] = useState(null);
+  const [accessVerified, setAccessVerified] = useState(!searchParams.get('set'));
+  const [accessBlockReason, setAccessBlockReason] = useState('');
 
   // Published exams state for test selection
   const [publishedSubjects, setPublishedSubjects] = useState([]);
   const [loadingPublished, setLoadingPublished] = useState(false);
   const [publishedError, setPublishedError] = useState('');
-  const [remainingAttempts, setRemainingAttempts] = useState(null);
   const [selectedSubjectFilter, setSelectedSubjectFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -507,7 +198,6 @@ const Exam = () => {
   const [submitResult, setSubmitResult] = useState(null);
   const [showAiModal, setShowAiModal] = useState(false);
   const [navFilter, setNavFilter] = useState('all'); // 'all' | 'incorrect' | 'correct' | 'skipped'
-  const [reviewFilter, setReviewFilter] = useState('all'); // 'all' | 'correct' | 'incorrect' | 'skipped'
 
   // Memoized evaluated reviews for instant review mode on question paper
   const evaluatedReviews = useMemo(() => {
@@ -711,14 +401,14 @@ const Exam = () => {
 
   // Automatically turn on webcam ONLY when a specific exam is selected or active
   useEffect(() => {
-    if (examSetId && !submitResult) {
+    if (examSetId && accessVerified && !accessBlockReason && !submitResult) {
       startCamera();
-    } else if (!examSetId && cameraStream) {
+    } else if ((!examSetId || accessBlockReason) && cameraStream) {
       cameraStream.getTracks().forEach(t => t.stop());
       setCameraStream(null);
       setCameraActive(false);
     }
-  }, [examSetId, started, submitResult]);
+  }, [examSetId, started, submitResult, accessVerified, accessBlockReason]);
 
   // Cleanup camera stream when component unmounts or exam is submitted
   useEffect(() => {
@@ -890,7 +580,7 @@ const Exam = () => {
         setTabViolations(1);
         tabSwitchAlertRef.current = true;
         setTabSwitchAlert(true);
-        showSecurityToast('🚨 Tab switch detected! You must remain on this exam tab.');
+        showSecurityToast('Tab switch detected! You must remain on this exam tab.');
       } else if (tabViolationsRef.current >= 1) {
         tabViolationsRef.current = 2;
         setTabViolations(2);
@@ -947,25 +637,25 @@ const Exam = () => {
       if (e.clipboardData) {
         e.clipboardData.clearData();
       }
-      showSecurityToast('🚫 Copying question text or options is strictly prohibited.');
+      showSecurityToast('Blocked Copying question text or options is strictly prohibited.');
     };
 
     const handlePaste = (e) => {
       e.preventDefault();
       e.stopPropagation();
-      showSecurityToast('🚫 Pasting is strictly prohibited during the examination.');
+      showSecurityToast('Blocked Pasting is strictly prohibited during the examination.');
     };
 
     const handleCut = (e) => {
       e.preventDefault();
       e.stopPropagation();
-      showSecurityToast('🚫 Cutting content is disabled during the examination.');
+      showSecurityToast('Blocked Cutting content is disabled during the examination.');
     };
 
     const handleContextMenu = (e) => {
       e.preventDefault();
       e.stopPropagation();
-      showSecurityToast('🚫 Right-click context menu is disabled during the exam.');
+      showSecurityToast('Blocked Right-click context menu is disabled during the exam.');
     };
 
     const handleDragStart = (e) => {
@@ -998,7 +688,7 @@ const Exam = () => {
           p: 'Printing',
           s: 'Saving page'
         };
-        showSecurityToast(`🚫 ${actionLabels[key] || 'Shortcut'} is strictly disabled during the exam.`);
+        showSecurityToast(`Blocked ${actionLabels[key] || 'Shortcut'} is strictly disabled during the exam.`);
         return;
       }
 
@@ -1006,7 +696,7 @@ const Exam = () => {
       if (e.key === 'F12' || (isCtrlOrCmd && e.shiftKey && ['i', 'j', 'c'].includes(key))) {
         e.preventDefault();
         e.stopPropagation();
-        showSecurityToast('🚫 Developer Tools inspection is strictly disabled.');
+        showSecurityToast('Blocked Developer Tools inspection is strictly disabled.');
         return;
       }
     };
@@ -1030,7 +720,7 @@ const Exam = () => {
     };
   }, [started, submitResult]);
 
-  // Synchronize state with URL search params & verify attempt limits
+  // Verify URL access against the student's backend-assigned attempt before loading questions.
   useEffect(() => {
     const currentSet = searchParams.get('set') || '';
     const currentSubj = searchParams.get('subject') || '';
@@ -1039,21 +729,49 @@ const Exam = () => {
     setExamSetId(currentSet);
     if (currentSubj) setSubject(currentSubj);
     if (currentName) setExamName(currentName);
-    if (searchParams.get('label')) setSetLabel(searchParams.get('label'));
-
-    if (currentSet || currentName) {
-      const completedRecord = checkExamSubmitted(currentSet, currentName, currentSubj);
-      if (completedRecord) {
-        setAlreadyCompleted(true);
-        setCompletedSubmission(completedRecord);
-      } else {
-        setAlreadyCompleted(false);
-        setCompletedSubmission(null);
-      }
-    } else {
+    if (!currentSet) {
       setAlreadyCompleted(false);
-      setCompletedSubmission(null);
+      setAccessBlockReason('');
+      setAccessVerified(true);
+      return undefined;
     }
+
+    let active = true;
+    setAccessVerified(false);
+    setAccessBlockReason('');
+    setAlreadyCompleted(false);
+
+    const verifyAccess = async () => {
+      try {
+        const response = await fetch('/api/student/exams', { credentials: 'include' });
+        if (!response.ok) throw new Error('Exam access could not be verified.');
+        const exams = flattenStudentExams(await response.json());
+        const assignedExam = exams.find((exam) => String(exam.assigned_set_id || '') === currentSet);
+        const state = getStudentExamState(assignedExam);
+        const canOpen = state === 'available' || state === 'retake';
+
+        if (!active) return;
+        setAlreadyCompleted(state === 'completed');
+        if (!canOpen) {
+          const reasons = {
+            completed: 'This assigned exam has already been submitted.',
+            expired: 'This exam is past its due date.',
+            upcoming: 'This exam is not available yet.',
+            unavailable: 'This set is not currently assigned or available to your account.',
+          };
+          setAccessBlockReason(reasons[state] || 'This exam is not available to your account.');
+        }
+      } catch (error) {
+        if (active) {
+          setAccessBlockReason(error.message || 'Exam access could not be verified.');
+        }
+      } finally {
+        if (active) setAccessVerified(true);
+      }
+    };
+
+    verifyAccess();
+    return () => { active = false; };
   }, [searchParams]);
 
   // Fetch published exams when no exam is currently chosen
@@ -1170,9 +888,6 @@ const Exam = () => {
       const scopedSubjects = normalizeExamSubjects(filteredList);
       setPublishedSubjects(scopedSubjects);
 
-      if (data && data.remaining_attempts) {
-        setRemainingAttempts(data.remaining_attempts);
-      }
     } catch (err) {
       console.error('Failed to retrieve published exams:', err);
       setPublishedError('Unable to retrieve published exams. Please check your connection.');
@@ -1203,61 +918,26 @@ const Exam = () => {
 
   // Handle selecting an exam from published tests list (Assigned based on Student ID: A, B, C, D...)
   const handleSelectExam = (exam, subjGroup, targetSet) => {
-    let setObj = targetSet;
-    if (!setObj && exam.assigned_set_id && exam.sets) {
-      setObj = exam.sets.find(s => s.exam_set_id === exam.assigned_set_id);
-    }
-    if (!setObj && exam.sets && exam.sets.length > 0) {
-      let idStr = studentDetails?.id || studentDetails?.kcet_student_id || 'STD-001';
-      const digitsMatch = idStr.match(/\d+/g);
-      let assignedIndex = 0;
-      if (digitsMatch && digitsMatch.length > 0) {
-        const val = parseInt(digitsMatch[digitsMatch.length - 1], 10);
-        if (!isNaN(val) && val > 0) {
-          assignedIndex = (val - 1) % exam.sets.length;
-        }
-      } else {
-        let numHash = 0;
-        for (let i = 0; i < idStr.length; i++) {
-          numHash = (numHash * 31 + idStr.charCodeAt(i)) >>> 0;
-        }
-        assignedIndex = numHash % exam.sets.length;
-      }
-      setObj = exam.sets[assignedIndex] || exam.sets[0];
-    }
-    if (!setObj) {
-      alert("No question sets available for this exam.");
+    const assignedSet = exam.sets?.find((set) => set.exam_set_id === exam.assigned_set_id);
+    const setObj = targetSet || assignedSet;
+    if (!exam.assigned_set_id || !setObj || setObj.exam_set_id !== exam.assigned_set_id) {
+      alert('The backend has not assigned an available set to this account.');
       return;
     }
     const setId = setObj.exam_set_id;
     const subj = subjGroup.subject || 'General';
     const name = exam.exam_name || `${subj} Mock Exam`;
-    const label = setObj.set_label || 'A';
-
-    // Strict 1 attempt restriction check
-    const completedRecord = checkExamSubmitted(setId, name, subj);
-    if (completedRecord) {
-      setAlreadyCompleted(true);
-      setCompletedSubmission(completedRecord);
-      setExamSetId(setId);
-      setSubject(subj);
-      setExamName(name);
-      setSetLabel(label);
-      setSearchParams({ set: setId, subject: subj, name: name, label: label });
-      return;
-    }
-
+    setAccessVerified(false);
+    setAccessBlockReason('');
     setExamSetId(setId);
     setSubject(subj);
     setExamName(name);
-    setSetLabel(label);
     setSearchParams({
       set: setId,
       subject: subj,
       name: name,
-      label: label
+      label: setObj.set_label || 'A'
     });
-    startCamera();
   };
 
   // Handle going back to published exam selection
@@ -1271,7 +951,8 @@ const Exam = () => {
     setQuestions([]);
     setStarted(false);
     setAlreadyCompleted(false);
-    setCompletedSubmission(null);
+    setAccessBlockReason('');
+    setAccessVerified(true);
     setSubmitResult(null);
     setShowAiModal(false);
     setAnswers({});
@@ -1306,7 +987,7 @@ const Exam = () => {
 
   // Fetch questions once a specific exam set is selected (unless already completed)
   useEffect(() => {
-    if (!examSetId || alreadyCompleted) {
+    if (!examSetId || !accessVerified || accessBlockReason) {
       setLoadingQuestions(false);
       return;
     }
@@ -1334,7 +1015,6 @@ const Exam = () => {
                 marks: q.marks || 1
               })));
               if (data.subject) setSubject(data.subject);
-              if (data.set_label) setSetLabel(data.set_label);
               loadedSuccessfully = true;
             }
           } catch (e) {
@@ -1343,20 +1023,19 @@ const Exam = () => {
         }
 
         if (!loadedSuccessfully) {
-          // Fall back to generating robust subject-specific KCET questions
-          const fallbackQs = getFallbackQuestionsForSubject(subject || examName || 'Biology', examName);
-          setQuestions(fallbackQs);
+          setQuestions([]);
+          setLoadError('Question content is unavailable from the exam service. This assigned exam cannot be started with substitute questions.');
         }
       } catch (err) {
-        const fallbackQs = getFallbackQuestionsForSubject(subject || examName || 'Biology', examName);
-        setQuestions(fallbackQs);
+        setQuestions([]);
+        setLoadError('Question content could not be verified. Return to My Exams and try again.');
       } finally {
         setLoadingQuestions(false);
       }
     };
 
     fetchQuestions();
-  }, [examSetId]);
+  }, [examSetId, accessVerified, accessBlockReason]);
 
   const handleSubmitExamRef = useRef(null);
   const handleSubmitExam = async (violationReason = '') => {
@@ -1667,107 +1346,17 @@ const Exam = () => {
 
   return (
     <>
-      {/* Styles applied specifically when inside an exam session */}
-      {examSetId && (
-        <style>{`
-          html, body { 
-            overflow-y: auto !important; 
-            overflow-x: hidden !important; 
-            height: auto !important;
-            min-height: 100vh !important;
-          }
-          ${(started && !submitResult) ? `
-          body, html, .exam-layout, .exam-layout *, .question-panel, .question-panel *, .q-body, .q-answer-area {
-            -webkit-user-select: none !important;
-            -moz-user-select: none !important;
-            -ms-user-select: none !important;
-            user-select: none !important;
-            -webkit-touch-callout: none !important;
-          }
-          ` : ''}
-          .nav, .navbar { display: none !important; }
-          .main-content { 
-            margin-left: 0 !important; 
-            padding: 0 !important; 
-            max-width: 100% !important; 
-            min-height: 100vh !important;
-            overflow-y: auto !important;
-          }
-          .exam-layout {
-            display: grid !important;
-            grid-template-columns: 280px 1fr !important;
-            gap: 24px !important;
-            max-width: 1200px !important;
-            margin: 0 auto !important;
-            padding: 20px 20px 80px 20px !important;
-            box-sizing: border-box !important;
-          }
-          @media (max-width: 900px) {
-            .exam-layout {
-              grid-template-columns: 1fr !important;
-            }
-          }
-          .exam-sidebar {
-            position: sticky !important;
-            top: 76px !important;
-            max-height: calc(100vh - 96px) !important;
-            overflow-y: auto !important;
-            scrollbar-width: thin !important;
-            padding-bottom: 20px !important;
-          }
-          .exam-sidebar::-webkit-scrollbar {
-            width: 5px;
-          }
-          .exam-sidebar::-webkit-scrollbar-thumb {
-            background: rgba(124, 58, 237, 0.3);
-            border-radius: 4px;
-          }
-          .overlay {
-            position: fixed !important;
-            inset: 0 !important;
-            background: rgba(0, 0, 0, 0.85) !important;
-            backdrop-filter: blur(8px) !important;
-            -webkit-backdrop-filter: blur(8px) !important;
-            z-index: 9999 !important;
-            display: flex !important;
-            justify-content: center !important;
-            align-items: flex-start !important;
-            overflow-y: auto !important;
-            -webkit-overflow-scrolling: touch !important;
-            padding: 30px 16px 60px 16px !important;
-            box-sizing: border-box !important;
-          }
-          .overlay::-webkit-scrollbar {
-            width: 6px;
-          }
-          .overlay::-webkit-scrollbar-thumb {
-            background: rgba(124, 58, 237, 0.4);
-            border-radius: 4px;
-          }
-          .entry-modal {
-            background: var(--s1) !important;
-            border: 1px solid var(--border2) !important;
-            border-radius: var(--r) !important;
-            padding: 24px 22px !important;
-            max-width: 500px !important;
-            width: 100% !important;
-            margin: auto 0 !important;
-            box-sizing: border-box !important;
-          }
-        `}</style>
-      )}
-
       {/* Published Exams Selection Screen (Shown when student visits Exam page without selecting a test yet) */}
       {!examSetId && !submitResult && (
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '30px 20px 80px', minHeight: '80vh' }}>
+        <div style={{ maxWidth: '1440px', width: '100%', boxSizing: 'border-box', margin: '0 auto', padding: '30px 20px 80px', minHeight: '80vh' }}>
           {/* Header Banner */}
           <div style={{ marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
             <div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '4px 12px', borderRadius: '20px', background: 'rgba(124,58,237,0.12)', color: 'var(--purple-l, #a855f7)', fontSize: '0.82rem', fontWeight: 700, marginBottom: '10px' }}>
-                <span>📝</span> Select Examination
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '4px 12px', borderRadius: '20px', background: 'var(--color-soft-orange)', color: 'var(--color-primary)', fontSize: '0.82rem', fontWeight: 700, marginBottom: '10px' }}>
+                <ExamIcon size={16} /> Select Examination
               </div>
               <h1 style={{ fontSize: '2.1rem', fontWeight: 800, color: 'var(--text)', margin: '0 0 8px 0', letterSpacing: '-0.5px' }}>
-                Available <span style={{ background: 'linear-gradient(135deg, #a855f7, #38bdf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Practice Exams</span>
+                Available <span style={{ color: 'var(--color-primary)' }}>Practice Exams</span>
               </h1>
               <p style={{ fontSize: '0.95rem', color: 'var(--muted)', margin: 0 }}>
                 Please choose which published test you want to answer to begin your exam
@@ -1804,9 +1393,9 @@ const Exam = () => {
                     style={{
                       padding: '7px 16px',
                       borderRadius: '20px',
-                      border: isActive ? '1px solid var(--purple-l)' : '1px solid var(--border)',
-                      background: isActive ? 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(37,99,235,0.2))' : 'var(--s2)',
-                      color: isActive ? 'var(--purple-l, #a855f7)' : 'var(--muted)',
+                      border: isActive ? '1px solid var(--color-primary)' : '1px solid var(--border)',
+                      background: isActive ? 'var(--color-soft-orange)' : 'var(--s2)',
+                      color: isActive ? 'var(--color-primary)' : 'var(--muted)',
                       fontWeight: isActive ? 700 : 500,
                       fontSize: '0.85rem',
                       cursor: 'pointer',
@@ -1821,7 +1410,7 @@ const Exam = () => {
                       fontSize: '0.72rem',
                       padding: '1px 6px',
                       borderRadius: '10px',
-                      background: isActive ? 'rgba(124,58,237,0.3)' : 'rgba(0,0,0,0.15)',
+                      background: isActive ? 'rgba(230,95,0,0.15)' : 'rgba(0,0,0,0.04)',
                       color: isActive ? '#fff' : 'var(--muted)'
                     }}>
                       {count}
@@ -1835,6 +1424,7 @@ const Exam = () => {
             <div style={{ minWidth: '240px', flex: '1 1 240px', maxWidth: '340px' }}>
               <input
                 type="text"
+                aria-label="Search exams by name"
                 placeholder="Search test by name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -1862,7 +1452,10 @@ const Exam = () => {
           {/* Error State */}
           {publishedError && !loadingPublished && (
             <div style={{ padding: '16px 20px', background: 'rgba(239,68,68,0.1)', border: '1px solid var(--red)', borderRadius: '12px', color: 'var(--red)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>⚠️ {publishedError}</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <AlertIcon size={18} style={{ color: 'var(--color-error)' }} />
+                {publishedError}
+              </span>
               <button type="button" className="btn-outline small" onClick={fetchPublishedExams}>Retry</button>
             </div>
           )}
@@ -1877,7 +1470,7 @@ const Exam = () => {
               textAlign: 'center',
               color: 'var(--muted)'
             }}>
-              <div style={{ fontSize: '3rem', marginBottom: '14px' }}>📝</div>
+              <div style={{ marginBottom: '14px', color: 'var(--color-primary)' }}><ExamIcon size={40} /></div>
               <h3 style={{ fontSize: '1.25rem', color: 'var(--text)', marginBottom: '8px', fontWeight: 700 }}>
                 {searchQuery || selectedSubjectFilter !== 'ALL' ? 'No Matching Exams Found' : 'No Published Exams Available'}
               </h3>
@@ -1903,17 +1496,17 @@ const Exam = () => {
           {!loadingPublished && filteredExamsList.length > 0 && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
               {filteredExamsList.map(({ exam, subjGroup }) => {
-                const defaultSet = getAssignedSetForStudent(exam.sets, studentDetails.id);
+                const defaultSet = exam.sets?.find((set) => set.exam_set_id === exam.assigned_set_id);
                 const subjectName = subjGroup.subject || 'General';
-                const completedRecord = checkExamSubmitted(defaultSet?.exam_set_id || exam.exam_id, exam.exam_name, subjectName);
-                const isCompleted = Boolean(completedRecord);
+                const examState = getStudentExamState(exam);
+                const isCompleted = examState === 'completed';
 
                 const badgeColor = subjectName === 'Biology'
                   ? { bg: 'rgba(5,150,105,0.12)', text: '#059669', border: 'rgba(5,150,105,0.3)' }
                   : subjectName === 'Physics'
                     ? { bg: 'rgba(37,99,235,0.12)', text: '#2563eb', border: 'rgba(37,99,235,0.3)' }
                     : subjectName === 'Chemistry'
-                      ? { bg: 'rgba(124,58,237,0.12)', text: '#7c3aed', border: 'rgba(124,58,237,0.3)' }
+                      ? { bg: 'rgba(230,95,0,0.12)', text: '#E65F00', border: 'rgba(230,95,0,0.3)' }
                       : { bg: 'rgba(217,119,6,0.12)', text: '#d97706', border: 'rgba(217,119,6,0.3)' };
 
                 return (
@@ -1957,12 +1550,12 @@ const Exam = () => {
                               fontSize: '0.75rem',
                               fontWeight: 700
                             }}>
-                              ✓ Completed (1 Attempt Limit)
+                               Completed (1 Attempt Limit)
                             </span>
                           )}
                         </div>
                         <span style={{ fontSize: '0.8rem', color: 'var(--muted)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          ⚡ Full Length Mock
+                          Priority Full Length Mock
                         </span>
                       </div>
 
@@ -1994,7 +1587,7 @@ const Exam = () => {
                         </div>
                         <div>
                           <span>Duration:</span>{' '}
-                          <strong style={{ color: 'var(--purple-l)' }}>80 Mins</strong>
+                          <strong style={{ color: 'var(--color-primary)' }}>80 Mins</strong>
                         </div>
                         <div>
                           <span>Proctoring:</span>{' '}
@@ -2022,9 +1615,9 @@ const Exam = () => {
                             color: '#10b981'
                           }}
                         >
-                          ✓ Completed (1 Attempt Limit)
+                          Completed
                         </button>
-                      ) : defaultSet ? (
+                      ) : ['available', 'retake'].includes(examState) && defaultSet ? (
                         <button
                           type="button"
                           className="btn-primary"
@@ -2041,7 +1634,7 @@ const Exam = () => {
                             gap: '8px'
                           }}
                         >
-                          Take Exam →
+                          {examState === 'retake' ? 'Retake Exam →' : `Take Set ${exam.assigned_set_label || defaultSet.set_label} →`}
                         </button>
                       ) : (
                         <button
@@ -2050,7 +1643,7 @@ const Exam = () => {
                           disabled
                           style={{ width: '100%', opacity: 0.5, cursor: 'not-allowed' }}
                         >
-                          Unavailable
+                          {examState === 'upcoming' ? 'Not Started' : examState === 'expired' ? 'Expired' : 'Unavailable'}
                         </button>
                       )}
                     </div>
@@ -2062,125 +1655,110 @@ const Exam = () => {
         </div>
       )}
       
-      {/* Top bar during exam or evaluation review */}
-      <div className="exam-topbar" id="examTopbar" style={{ display: started ? "flex" : "none" }}>
-        <div className="exam-topbar-left">
-          <div className="brand-icon small">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          </div>
-          <span className="exam-title-text" style={{ color: "#fff" }}>Vyasa<span className="brand-ai">Prep</span></span>
-        </div>
-        <div className="exam-topbar-center">
-          <span className="exam-badge set-badge" id="topbarSet">{examName}</span>
-          <span className="exam-badge subject-badge" id="topbarSubject">{subject}</span>
-          {studentDetails.institutionName && (
-            <span className="exam-badge" style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.4)', color: '#34d399', fontSize: '0.78rem', fontWeight: 600 }}>
-              🏫 {studentDetails.institutionName}
-            </span>
-          )}
-          {submitResult ? (
-            <span style={{
-              padding: '4px 12px',
-              borderRadius: '12px',
-              background: 'rgba(16,185,129,0.18)',
-              border: '1px solid rgba(16,185,129,0.5)',
-              color: '#34d399',
-              fontSize: '0.8rem',
-              fontWeight: 800
-            }}>
-              ✓ Exam Evaluated
-            </span>
-          ) : (
-            (tabViolations === 1 || faceViolations === 1) ? (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                {tabViolations === 1 && (
-                  <span style={{
-                    padding: '4px 10px',
-                    borderRadius: '12px',
-                    background: 'rgba(239,68,68,0.22)',
-                    border: '1px solid rgba(239,68,68,0.6)',
-                    color: '#f87171',
-                    fontSize: '0.75rem',
-                    fontWeight: 800,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}>
-                    ⚠️ Tab Warning: 1/2
-                  </span>
-                )}
-                {faceViolations === 1 && (
-                  <span style={{
-                    padding: '4px 10px',
-                    borderRadius: '12px',
-                    background: 'rgba(234,179,8,0.22)',
-                    border: '1px solid rgba(234,179,8,0.6)',
-                    color: '#facc15',
-                    fontSize: '0.75rem',
-                    fontWeight: 800,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}>
-                    ⚠️ Face Warning: 1/2
-                  </span>
-                )}
+      {started && !submitResult && <div className="exam-topbar" id="examTopbar">
+            <div className="exam-topbar-left">
+              <div style={{ background: '#FCFBF8', borderRadius: '6px', padding: '3px 8px' }}>
+                <BrandLogo size="sm" />
               </div>
-            ) : null
-          )}
-        </div>
-        <div className="exam-topbar-right">
-          {submitResult ? (
-            <button 
-              type="button" 
-              className="btn-outline" 
-              onClick={() => navigate('/dashboard')}
-              style={{ padding: '6px 14px', fontSize: '0.82rem', fontWeight: 700 }}
-            >
-              Dashboard →
-            </button>
-          ) : (
-            <div className="timer-block">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span id="timerDisplay" className="timer-text">{formatTime(timeLeft)}</span>
             </div>
-          )}
-        </div>
-      </div>
+            <div className="exam-topbar-center">
+              <span className="exam-badge set-badge" id="topbarSet">{examName}</span>
+              <span className="exam-badge subject-badge" id="topbarSubject">{subject}</span>
+              {studentDetails.institutionName && (
+                  <span className="exam-badge" style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.4)', color: '#34d399', fontSize: '0.78rem', fontWeight: 600 }}>
+                  <InstitutionsIcon size={14} /> {studentDetails.institutionName}
+                </span>
+              )}
+              {submitResult ? (
+                <span style={{
+                  padding: '4px 12px',
+                  borderRadius: '12px',
+                  background: 'rgba(16,185,129,0.18)',
+                  border: '1px solid rgba(16,185,129,0.5)',
+                  color: '#34d399',
+                  fontSize: '0.8rem',
+                  fontWeight: 800
+                }}>
+                   Exam Evaluated
+                </span>
+              ) : (
+                (tabViolations === 1 || faceViolations === 1) ? (
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    {tabViolations === 1 && (
+                      <span style={{
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                        background: 'rgba(239,68,68,0.22)',
+                        border: '1px solid rgba(239,68,68,0.6)',
+                        color: '#f87171',
+                        fontSize: '0.75rem',
+                        fontWeight: 800,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        <AlertIcon size={14} />
+                        Tab Warning: 1/2
+                      </span>
+                    )}
+                    {faceViolations === 1 && (
+                      <span style={{
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                        background: 'rgba(234,179,8,0.22)',
+                        border: '1px solid rgba(234,179,8,0.6)',
+                        color: '#facc15',
+                        fontSize: '0.75rem',
+                        fontWeight: 800,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        <AlertIcon size={14} />
+                        Face Warning: 1/2
+                      </span>
+                    )}
+                  </div>
+                ) : null
+              )}
+            </div>
+            <div className="exam-topbar-right">
+              {submitResult ? (
+                <button
+                  type="button"
+                  className="btn-outline"
+                  onClick={() => navigate('/dashboard')}
+                  style={{ padding: '6px 14px', fontSize: '0.82rem', fontWeight: 700 }}
+                >
+                  Dashboard →
+                </button>
+              ) : (
+                <div className="timer-block">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span id="timerDisplay" className="timer-text">{formatTime(timeLeft)}</span>
+                </div>
+              )}
+            </div>
+          </div>}
 
-      {/* Exam Already Completed Block Screen */}
-      {examSetId && alreadyCompleted && !submitResult && (
+      {examSetId && !accessVerified && !submitResult && (
+        <div role="status" style={{ maxWidth: '560px', margin: '60px auto', padding: '32px 24px', textAlign: 'center', color: 'var(--muted)' }}>
+          Verifying exam access...
+        </div>
+      )}
+
+      {/* Backend-authoritative exam access block */}
+      {examSetId && accessVerified && accessBlockReason && !submitResult && (
         <div style={{ maxWidth: '700px', margin: '60px auto', padding: '40px 24px', background: 'var(--s1)', border: '1px solid rgba(239, 68, 68, 0.4)', borderRadius: '20px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
-          <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', margin: '0 auto 20px' }}>
-            🔒
+          <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <LockIcon size={30} />
           </div>
           <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text)', marginBottom: '12px' }}>
-            Exam Already Completed
+            {alreadyCompleted ? 'Exam Already Completed' : 'Exam Not Available'}
           </h2>
-          <div style={{ display: 'inline-block', padding: '6px 16px', borderRadius: '20px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontWeight: 700, fontSize: '0.88rem', marginBottom: '20px', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
-            ✓ Attempt Limit Reached (1 Attempt Allowed)
-          </div>
           <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.6, maxWidth: '520px', margin: '0 auto 28px' }}>
-            You have already answered and submitted <strong>"{completedSubmission?.exam_name || examName || 'this exam'}"</strong> on {completedSubmission?.submitted_at ? new Date(completedSubmission.submitted_at).toLocaleDateString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : 'a previous attempt'}. In accordance with examination regulations, students are allowed to answer each exam only <strong>ONCE</strong>. Re-attempts are strictly restricted.
+            {accessBlockReason}
           </p>
-
-          {completedSubmission && (
-            <div style={{ background: 'var(--s2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '20px', marginBottom: '28px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-              <div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600 }}>Score</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--purple-l)' }}>{completedSubmission.score} / {completedSubmission.total_marks || 60}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600 }}>Percentage</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#38bdf8' }}>{completedSubmission.percentage}%</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600 }}>Status</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: completedSubmission.status === 'Pass' ? 'var(--green)' : '#ef4444' }}>{completedSubmission.status || 'Submitted'}</div>
-              </div>
-            </div>
-          )}
-
           <button
             type="button"
             className="btn-primary"
@@ -2193,7 +1771,7 @@ const Exam = () => {
       )}
 
       {/* Entry Modal / Pre-Exam Screen */}
-      {examSetId && !started && !submitResult && !alreadyCompleted && (
+      {examSetId && accessVerified && !accessBlockReason && !started && !submitResult && !alreadyCompleted && (
         <div className="overlay" style={{ display: "flex" }}>
           <div className="entry-modal" style={{ maxWidth: '520px', width: '90%' }}>
             <div className="entry-modal-top">
@@ -2203,7 +1781,7 @@ const Exam = () => {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: 'var(--purple-l, #a855f7)',
+                  color: 'var(--color-primary)',
                   cursor: 'pointer',
                   fontSize: '0.84rem',
                   fontWeight: 600,
@@ -2216,7 +1794,9 @@ const Exam = () => {
               >
                 ← Back to Published Tests
               </button>
-              <div className="entry-icon">🎓</div>
+              <div className="entry-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '50px' }}>
+                <AlertIcon size={32} style={{ color: 'var(--color-primary)' }} />
+              </div>
               <h2>{examName}</h2>
               <p>{subject} Examination</p>
             </div>
@@ -2226,19 +1806,8 @@ const Exam = () => {
                 <div style={{ padding: '20px', background: 'rgba(239,68,68,0.08)', border: '1px solid var(--red)', borderRadius: '12px', color: 'var(--red)', marginBottom: '16px', textAlign: 'center' }}>
                   <p style={{ fontWeight: 600, fontSize: '0.95rem', margin: '0 0 12px 0' }}>{loadError}</p>
                   <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <button
-                      type="button"
-                      className="btn-primary small"
-                      onClick={() => {
-                        setLoadError('');
-                        setQuestions(getFallbackQuestionsForSubject(subject || examName || 'Biology', examName));
-                      }}
-                      style={{ padding: '8px 16px', fontSize: '0.85rem' }}
-                    >
-                      ⚡ Start Practice Mode (Load Questions)
-                    </button>
                     <button type="button" className="btn-outline small" style={{ padding: '8px 16px', fontSize: '0.85rem' }} onClick={handleBackToExamSelection}>
-                      ← Choose a Different Test
+                      Return to My Exams
                     </button>
                   </div>
                 </div>
@@ -2246,12 +1815,12 @@ const Exam = () => {
                 <>
                   <div className="candidate-profile-box" style={{ background: "var(--s2)", border: "1px solid var(--border)", borderRadius: "var(--r)", padding: "14px 16px", marginBottom: "14px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 0", fontSize: "0.88rem" }}>
-                      <span style={{ color: "var(--muted)" }}>👤 Candidate Name:</span>
+                      <span style={{ color: "var(--muted)" }}>Candidate Name:</span>
                       <span style={{ fontWeight: "700", color: "var(--text)" }}>{studentDetails.name}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 0", fontSize: "0.88rem" }}>
-                      <span style={{ color: "var(--muted)" }}>🆔 Candidate ID:</span>
-                      <span style={{ fontWeight: "700", color: "var(--purple-l)", fontFamily: "monospace" }}>{studentDetails.id}</span>
+                      <span style={{ color: "var(--muted)" }}>Candidate ID:</span>
+                      <span style={{ fontWeight: "700", color: "var(--color-primary)", fontFamily: "monospace" }}>{studentDetails.id}</span>
                     </div>
                   </div>
 
@@ -2265,7 +1834,7 @@ const Exam = () => {
                   }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px", flexWrap: "wrap", gap: "6px" }}>
                       <span style={{ fontSize: "0.86rem", fontWeight: 700, color: "var(--text)", display: "flex", alignItems: "center", gap: "6px" }}>
-                        📹 Web Camera Verification
+                        <CameraIcon size={16} /> Web Camera Verification
                       </span>
                       <span style={{
                         fontSize: "0.75rem",
@@ -2339,7 +1908,7 @@ const Exam = () => {
                             padding: "2px 6px",
                             borderRadius: "4px"
                           }}>
-                            {faceDetected ? "✓ Face In View" : "Align Face"}
+                            {faceDetected ? " Face In View" : "Align Face"}
                           </span>
                         </div>
                       )}
@@ -2357,13 +1926,13 @@ const Exam = () => {
                           padding: "3px 8px",
                           borderRadius: "4px"
                         }}>
-                          {faceDetected ? `✓ Face Verified (${faceConfidence}%)` : "🚫 Face Not Detected"}
+                          {faceDetected ? ` Face Verified (${faceConfidence}%)` : "Blocked Face Not Detected"}
                         </div>
                       )}
 
                       {!cameraActive && (
                         <div style={{ color: "var(--muted)", textAlign: "center", padding: "16px" }}>
-                          <div style={{ fontSize: "2.4rem", marginBottom: "6px" }}>📷</div>
+                          <div style={{ marginBottom: "6px", color: 'var(--color-primary)' }}><CameraIcon size={36} /></div>
                           <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--red-l)" }}>Camera is OFF</div>
                           <div style={{ fontSize: "0.8rem", color: "var(--muted)", marginTop: "4px", maxWidth: "340px", lineHeight: "1.4" }}>
                             Webcam proctoring is mandatory. You cannot take the test without turning on your camera.
@@ -2378,10 +1947,10 @@ const Exam = () => {
                               padding: "8px 20px",
                               fontSize: "0.85rem",
                               fontWeight: 700,
-                              background: "linear-gradient(135deg, var(--purple), var(--blue))"
+                              background: "var(--color-primary)"
                             }}
                           >
-                            {checkingCamera ? "Requesting Camera..." : "📷 Turn On Camera"}
+                            {checkingCamera ? "Requesting Camera..." : <><CameraIcon size={16} /> Turn On Camera</>}
                           </button>
                         </div>
                       )}
@@ -2401,13 +1970,13 @@ const Exam = () => {
                         textAlign: "left"
                       }}>
                         <div style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}>
-                          <span>🚫</span> Student Face Not Detected
+                          <span>Blocked</span> Student Face Not Detected
                         </div>
                         <div style={{ marginTop: "4px", color: "var(--text)" }}>
                           {faceStatus}. Your camera appears to be covered or turned off. You cannot begin the test without your face clearly visible on screen.
                         </div>
                         <div style={{ marginTop: "6px", fontSize: "0.76rem", color: "var(--muted)" }}>
-                          👉 <strong>How to fix:</strong> Check your laptop's physical webcam privacy slider or switch, or allow camera access in Windows Settings.
+                          <strong>How to fix:</strong> Check your laptop's physical webcam privacy slider or switch, or allow camera access in Windows Settings.
                         </div>
                       </div>
                     )}
@@ -2423,7 +1992,7 @@ const Exam = () => {
                         marginBottom: "10px",
                         textAlign: "left"
                       }}>
-                        ⚠️ {cameraError}
+                        Warning  {cameraError}
                       </div>
                     )}
 
@@ -2438,19 +2007,19 @@ const Exam = () => {
                           justifyContent: "center",
                           padding: "10px",
                           fontSize: "0.88rem",
-                          background: "linear-gradient(135deg, #7c3aed, #2563eb)",
+                          background: "linear-gradient(135deg, #E65F00, #B34A00)",
                           fontWeight: 700
                         }}
                       >
-                        {checkingCamera ? "Requesting Camera..." : "📷 Turn On Camera to Unlock Exam"}
+                        {checkingCamera ? "Requesting Camera..." : <><CameraIcon size={16} /> Turn On Camera to Unlock Exam</>}
                       </button>
                     )}
                   </div>
 
                   <div className="exam-info-box" style={{ marginBottom: '16px' }}>
-                    <div className="info-row"><span>📚 Subject:</span><span>{subject}</span></div>
-                    <div className="info-row"><span>❓ Questions:</span><span>{loadingQuestions ? 'Loading...' : `${questions.length} Live Questions`}</span></div>
-                    <div className="info-row"><span>⏱ Time Limit:</span><span>80 minutes</span></div>
+                    <div className="info-row"><span><BooksIcon size={16} /> Subject:</span><span>{subject}</span></div>
+                    <div className="info-row"><span><QuestionsIcon size={16} /> Questions:</span><span>{loadingQuestions ? 'Loading...' : `${questions.length} Live Questions`}</span></div>
+                    <div className="info-row"><span>Time Limit:</span><span>80 minutes</span></div>
                   </div>
 
                   <button 
@@ -2472,7 +2041,7 @@ const Exam = () => {
                       justifyContent: 'center',
                       opacity: (!cameraActive || !faceDetected || loadingQuestions || questions.length === 0) ? 0.45 : 1,
                       cursor: (!cameraActive || !faceDetected || loadingQuestions || questions.length === 0) ? 'not-allowed' : 'pointer',
-                      background: (cameraActive && faceDetected) ? 'linear-gradient(135deg, var(--purple), var(--blue))' : '#27272a',
+                      background: (cameraActive && faceDetected) ? 'var(--color-primary)' : '#27272a',
                       border: (!cameraActive || !faceDetected) ? '1px solid rgba(239,68,68,0.5)' : 'none',
                       color: (!cameraActive || !faceDetected) ? 'var(--red-l, #f87171)' : '#ffffff'
                     }}
@@ -2481,9 +2050,9 @@ const Exam = () => {
                     {loadingQuestions 
                       ? 'Loading Questions...' 
                       : !cameraActive 
-                        ? '🚫 Turn On Camera to Unlock Exam' 
+                        ? 'Blocked Turn On Camera to Unlock Exam'
                         : !faceDetected
-                          ? '🚫 Student Face Must Be Visible to Begin Exam'
+                          ? 'Blocked Student Face Must Be Visible to Begin Exam'
                           : 'Begin Exam →'}
                   </button>
                 </>
@@ -2515,14 +2084,31 @@ const Exam = () => {
                 borderRadius: '20px',
                 background: faceViolations >= 2 ? 'rgba(239,68,68,0.22)' : 'rgba(234,179,8,0.2)',
                 border: faceViolations >= 2 ? '1px solid rgba(239,68,68,0.6)' : '1px solid rgba(234,179,8,0.6)',
-                color: faceViolations >= 2 ? '#f87171' : '#facc15'
+                color: faceViolations >= 2 ? '#f87171' : '#facc15',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px'
               }}>
-                {faceViolations >= 2 ? '🚨 PROCTORING VIOLATION (2 OF 2)' : '⚠️ PROCTORING WARNING 1 OF 2'}
+                {faceViolations >= 2 ? (
+                  <>
+                    <SirenIcon size={20} style={{ color: '#f87171' }} />
+                    PROCTORING VIOLATION (2 OF 2)
+                  </>
+                ) : (
+                  <>
+                    <AlertIcon size={20} style={{ color: '#facc15' }} />
+                    PROCTORING WARNING 1 OF 2
+                  </>
+                )}
               </span>
             </div>
 
-            <div style={{ fontSize: '3.2rem', marginBottom: '8px' }}>
-              {faceViolations >= 2 ? '🚨' : '⚠️'}
+            <div style={{ marginBottom: '8px' }}>
+              {faceViolations >= 2 ? (
+                <SirenIcon size={40} style={{ color: '#f87171' }} />
+              ) : (
+                <AlertIcon size={40} style={{ color: '#facc15' }} />
+              )}
             </div>
 
             <h2 style={{
@@ -2548,7 +2134,7 @@ const Exam = () => {
                 textAlign: 'center',
                 fontWeight: 700
               }}>
-                ⚠️ <strong>CRITICAL WARNING:</strong> If your face is not recognized again, the test will automatically be cancelled and submitted!
+                Warning  <strong>CRITICAL WARNING:</strong> If your face is not recognized again, the test will automatically be cancelled and submitted!
               </div>
             ) : (
               <div style={{
@@ -2563,7 +2149,7 @@ const Exam = () => {
                 textAlign: 'center',
                 fontWeight: 700
               }}>
-                🚫 Your face was not recognized for the second time. Per KCET proctoring regulations, your test has been automatically cancelled and submitted.
+                Blocked Your face was not recognized for the second time. Per KCET proctoring regulations, your test has been automatically cancelled and submitted.
               </div>
             )}
 
@@ -2645,7 +2231,7 @@ const Exam = () => {
                   padding: "3px 8px",
                   borderRadius: "4px"
                 }}>
-                  {faceDetected ? `✓ Face In View (${faceConfidence}%)` : "Align Face"}
+                  {faceDetected ? ` Face In View (${faceConfidence}%)` : "Align Face"}
                 </span>
               </div>
             </div>
@@ -2657,7 +2243,7 @@ const Exam = () => {
                 disabled={checkingCamera}
                 style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: '0.95rem', fontWeight: 700 }}
               >
-                {checkingCamera ? 'Connecting Camera...' : '📷 Turn On Camera to Resume Exam'}
+                {checkingCamera ? 'Connecting Camera...' : <><CameraIcon size={16} /> Turn On Camera to Resume Exam</>}
               </button>
             ) : faceViolations < 2 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -2688,14 +2274,14 @@ const Exam = () => {
                       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
-                      ✓ Face Verified — Click to Resume Exam
+                       Face Verified — Click to Resume Exam
                     </>
                   ) : (
                     '⏳ Position Face Inside Oval to Resume'
                   )}
                 </button>
                 <div style={{ fontSize: '0.82rem', color: 'var(--muted)', background: 'rgba(255,255,255,0.03)', padding: '8px 12px', borderRadius: '6px' }}>
-                  👉 Center your face in the oval or open your camera shutter. Once the green checkmark appears, click Resume (or hold position for 2 seconds to auto-resume).
+                  Center your face in the oval or open your camera shutter. Once the green checkmark appears, click Resume (or hold position for 2 seconds to auto-resume).
                 </div>
               </div>
             ) : (
@@ -2731,7 +2317,7 @@ const Exam = () => {
             gap: '10px'
           }}
         >
-          <span style={{ fontSize: '1.25rem' }}>🔒</span>
+          <LockIcon size={20} />
           <span>{securityToast.message}</span>
         </div>
       )}
@@ -2757,14 +2343,27 @@ const Exam = () => {
                 borderRadius: '20px',
                 background: tabViolations >= 2 ? 'rgba(239,68,68,0.22)' : 'rgba(234,179,8,0.2)',
                 border: tabViolations >= 2 ? '1px solid rgba(239,68,68,0.6)' : '1px solid rgba(234,179,8,0.6)',
-                color: tabViolations >= 2 ? '#f87171' : '#facc15'
+                color: tabViolations >= 2 ? '#f87171' : '#facc15',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px'
               }}>
-                {tabViolations >= 2 ? '🚨 TAB VIOLATION: DISQUALIFIED (2 OF 2)' : '⚠️ TAB SWITCH DETECTED (STRIKE 1 OF 2)'}
+                {tabViolations >= 2 ? (
+                  <>
+                    <SirenIcon size={20} style={{ color: '#f87171' }} />
+                    TAB VIOLATION: DISQUALIFIED (2 OF 2)
+                  </>
+                ) : (
+                  <>
+                    <AlertIcon size={20} style={{ color: '#facc15' }} />
+                    TAB SWITCH DETECTED (STRIKE 1 OF 2)
+                  </>
+                )}
               </span>
             </div>
 
             <div style={{ fontSize: '3.4rem', marginBottom: '10px' }}>
-              {tabViolations >= 2 ? '🚫' : '📑'}
+              {tabViolations >= 2 ? 'Blocked' : 'Document'}
             </div>
 
             <h2 style={{
@@ -2789,7 +2388,7 @@ const Exam = () => {
                 textAlign: 'center',
                 fontWeight: 700
               }}>
-                ⚠️ <strong>FINAL WARNING:</strong> You switched away from the exam tab. Tab switching, window unfocusing, and copying questions are strictly prohibited during the exam. If you switch tabs again, your test will be <strong>automatically submitted immediately</strong>!
+                Warning  <strong>FINAL WARNING:</strong> You switched away from the exam tab. Tab switching, window unfocusing, and copying questions are strictly prohibited during the exam. If you switch tabs again, your test will be <strong>automatically submitted immediately</strong>!
               </div>
             ) : (
               <div style={{
@@ -2804,7 +2403,7 @@ const Exam = () => {
                 textAlign: 'center',
                 fontWeight: 700
               }}>
-                🚫 Multiple tab switches were detected. Under examination anti-cheat regulations, your exam has been terminated and auto-submitted.
+                Blocked Multiple tab switches were detected. Under examination anti-cheat regulations, your exam has been terminated and auto-submitted.
               </div>
             )}
 
@@ -2825,11 +2424,11 @@ const Exam = () => {
                   padding: '12px',
                   fontSize: '0.96rem',
                   fontWeight: 800,
-                  background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
+                  background: 'linear-gradient(135deg, #E65F00, #B34A00)',
                   cursor: 'pointer'
                 }}
               >
-                ✓ I Understand — Resume Exam
+                 I Understand — Resume Exam
               </button>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--red-l)', fontSize: '0.9rem', fontWeight: 700 }}>
@@ -2843,24 +2442,24 @@ const Exam = () => {
 
       {/* Interactive Exam Layout (Handles both Live Test & Evaluated Review Mode) */}
       {started && questions.length > 0 && (
-        <div className={`exam-layout ${started && !submitResult ? 'secure-anti-cheat' : ''}`}>
+        <div className={`exam-layout ${submitResult ? 'evaluation-mode' : ''} ${started && !submitResult ? 'secure-anti-cheat' : ''}`}>
           <aside className="exam-sidebar">
             {submitResult ? (
               <div style={{
                 marginBottom: "15px",
                 borderRadius: "10px",
                 padding: "16px 14px",
-                background: "linear-gradient(135deg, rgba(124,58,237,0.18), rgba(37,99,235,0.14))",
-                border: "1.5px solid rgba(124,58,237,0.4)",
+                background: "var(--color-soft-orange)",
+                border: "1px solid var(--color-light-orange)",
                 textAlign: "center"
               }}>
                 <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--muted, #9ca3af)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                   Marks Awarded
                 </div>
-                <div style={{ fontSize: "1.8rem", fontWeight: 900, color: (evalSummary?.percentage ?? 0) >= 50 ? "#10b981" : "#f59e0b", margin: "4px 0" }}>
+                <div style={{ fontSize: "1.8rem", fontWeight: 900, color: (evalSummary?.percentage ?? 0) >= 50 ? "#28724A" : "#8A5A00", margin: "4px 0" }}>
                   {evalSummary?.score ?? 0} <span style={{ fontSize: "0.95rem", color: "var(--muted, #9ca3af)", fontWeight: 500 }}>/ {evalSummary?.total ?? questions.length}</span>
                 </div>
-                <div style={{ fontSize: "0.82rem", color: "#fff", fontWeight: 700 }}>
+                <div style={{ fontSize: "0.82rem", color: "#1A365D", fontWeight: 700 }}>
                   {evalSummary?.percentage ?? 0}% Marks ({evalSummary?.correctCount ?? 0} Correct)
                 </div>
               </div>
@@ -2927,9 +2526,9 @@ const Exam = () => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px', marginBottom: '10px' }}>
                 {[
                   { id: 'all', label: `All (${questions.length})` },
-                  { id: 'incorrect', label: `✗ Wrong (${evalSummary?.incorrectCount ?? 0})` },
-                  { id: 'correct', label: `✓ Right (${evalSummary?.correctCount ?? 0})` },
-                  { id: 'skipped', label: `○ Skip (${evalSummary?.unansCount ?? 0})` }
+                  { id: 'incorrect', label: `Wrong (${evalSummary?.incorrectCount ?? 0})` },
+                  { id: 'correct', label: ` Right (${evalSummary?.correctCount ?? 0})` },
+                  { id: 'skipped', label: `Skip (${evalSummary?.unansCount ?? 0})` }
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -2941,7 +2540,7 @@ const Exam = () => {
                       fontWeight: 700,
                       borderRadius: '6px',
                       border: 'none',
-                      background: navFilter === tab.id ? 'var(--purple, #7c3aed)' : 'var(--s2, #1a1d26)',
+                      background: navFilter === tab.id ? 'var(--color-primary, #E65F00)' : 'var(--s2, #1a1d26)',
                       color: navFilter === tab.id ? '#fff' : 'var(--muted, #9ca3af)',
                       cursor: 'pointer',
                       textAlign: 'center'
@@ -2996,8 +2595,8 @@ const Exam = () => {
                         isSkipped ? { background: '#fef08a', borderColor: '#eab308', color: '#854d0e', fontWeight: 800 } : {}
                       )),
                       ...(isCurrent ? { 
-                        boxShadow: '0 0 0 3px #8b5cf6',
-                        ...((!submitResult && !isAnswered && !isSkipped) ? { background: '#ede9fe', borderColor: '#8b5cf6', color: '#5b21b6', fontWeight: 800 } : {})
+                        boxShadow: '0 0 0 3px #FBE1CA',
+                        ...((!submitResult && !isAnswered && !isSkipped) ? { background: '#FFF0E3', borderColor: '#FBE1CA', color: '#E65F00', fontWeight: 800 } : {})
                       } : {})
                     }}
                   >
@@ -3034,7 +2633,7 @@ const Exam = () => {
                     Skipped
                   </div>
                   <div className="legend-row">
-                    <span className="legend-box current" style={{ background: '#8b5cf6', border: '1.5px solid #7c3aed' }}></span>
+                    <span className="legend-box current" style={{ background: '#FBE1CA', border: '1.5px solid #E65F00' }}></span>
                     Current
                   </div>
                 </>
@@ -3057,33 +2656,14 @@ const Exam = () => {
                   {submitting ? 'Submitting...' : 'Submit Paper'}
                 </button>
               </>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
-                <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={() => setShowAiModal(true)}
-                  style={{ width: '100%', padding: '10px', fontSize: '0.84rem', fontWeight: 700, justifyContent: 'center' }}
-                >
-                  📊 Full AI Diagnostic Report
-                </button>
-                <button
-                  type="button"
-                  className="btn-outline"
-                  onClick={() => navigate('/dashboard')}
-                  style={{ width: '100%', padding: '9px', fontSize: '0.82rem', justifyContent: 'center' }}
-                >
-                  Return to Dashboard
-                </button>
-              </div>
-            )}
+            ) : null}
           </aside>
 
           <div className="exam-content">
             {submitResult && (
               <div style={{
-                background: 'linear-gradient(135deg, rgba(124,58,237,0.15), rgba(37,99,235,0.1))',
-                border: '1.5px solid rgba(124,58,237,0.35)',
+                background: 'var(--color-soft-orange)',
+                border: '1px solid var(--color-light-orange)',
                 borderRadius: '14px',
                 padding: '16px 20px',
                 marginBottom: '18px',
@@ -3095,44 +2675,36 @@ const Exam = () => {
               }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '1.4rem' }}>🎯</span>
-                    <span style={{ fontSize: '1.15rem', fontWeight: 800, color: '#fff' }}>
-                      KCET Examination Evaluated
+                    <AIIcon size={22} />
+                    <span style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1A365D' }}>
+                      {evalSummary ? 'KCET Examination Evaluated' : 'Exam Submitted'}
                     </span>
-                    <span style={{
+                    {evalSummary && <span style={{
                       fontSize: '0.78rem',
                       fontWeight: 800,
                       padding: '3px 12px',
                       borderRadius: '14px',
                       background: (evalSummary?.percentage ?? 0) >= 50 ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)',
-                      color: (evalSummary?.percentage ?? 0) >= 50 ? '#34d399' : '#f87171',
+                      color: (evalSummary?.percentage ?? 0) >= 50 ? '#28724A' : '#A33B32',
                       border: `1px solid ${(evalSummary?.percentage ?? 0) >= 50 ? 'rgba(16,185,129,0.4)' : 'rgba(239,68,68,0.4)'}`
                     }}>
                       Total Marks: {evalSummary?.score ?? 0} / {evalSummary?.total ?? questions.length} ({evalSummary?.percentage ?? 0}%)
-                    </span>
+                    </span>}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', fontSize: '0.86rem', marginTop: '6px' }}>
-                    <span style={{ color: '#10b981', fontWeight: 700 }}>
-                      ✓ {evalSummary?.correctCount ?? 0} Correct (+{evalSummary?.correctCount ?? 0} Marks)
+                  {evalSummary ? <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', fontSize: '0.86rem', marginTop: '6px' }}>
+                    <span style={{ color: '#28724A', fontWeight: 700 }}>
+                       {evalSummary.correctCount ?? '—'} Correct
                     </span>
-                    <span style={{ color: '#ef4444', fontWeight: 700 }}>
-                      ✗ {evalSummary?.incorrectCount ?? 0} Incorrect (0 Marks)
+                    <span style={{ color: '#A33B32', fontWeight: 700 }}>
+                      {evalSummary.incorrectCount ?? '—'} Incorrect
                     </span>
-                    <span style={{ color: '#eab308', fontWeight: 700 }}>
-                      ○ {evalSummary?.unansCount ?? 0} Skipped (0 Marks)
+                    <span style={{ color: '#8A5A00', fontWeight: 700 }}>
+                      {evalSummary.unansCount ?? '—'} Skipped
                     </span>
-                  </div>
+                  </div> : <p style={{ margin: '6px 0 0', color: 'var(--muted)' }}>Your attempt was submitted. The result is not available yet.</p>}
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <button
-                    type="button"
-                    className="btn-primary"
-                    onClick={() => setShowAiModal(true)}
-                    style={{ padding: '8px 16px', fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    <span>📊</span> Full AI Diagnostic
-                  </button>
                   <button
                     type="button"
                     className="btn-outline"
@@ -3140,6 +2712,14 @@ const Exam = () => {
                     style={{ padding: '8px 14px', fontSize: '0.85rem' }}
                   >
                     Take Another Exam
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={() => navigate('/dashboard')}
+                    style={{ padding: '8px 14px', fontSize: '0.85rem' }}
+                  >
+                    Dashboard
                   </button>
                 </div>
               </div>
@@ -3153,7 +2733,7 @@ const Exam = () => {
               </div>
             )}
 
-            {questions[currentQ] && (() => {
+            {questions[currentQ] && (!submitResult || evaluatedReviews.length > 0) && (() => {
               const currRev = submitResult ? evaluatedReviews[currentQ] : null;
               const isRevCorrect = currRev ? currRev.is_correct : false;
               const isRevSkipped = currRev ? currRev.is_unanswered : false;
@@ -3181,7 +2761,7 @@ const Exam = () => {
                             alignItems: 'center',
                             gap: '4px'
                           }}>
-                            ✓ Correct (+1 Mark)
+                             Correct (+1 Mark)
                           </span>
                         ) : !isRevSkipped ? (
                           <span style={{
@@ -3196,7 +2776,7 @@ const Exam = () => {
                             alignItems: 'center',
                             gap: '4px'
                           }}>
-                            ✗ Incorrect (0 Marks)
+                            Incorrect (0 Marks)
                           </span>
                         ) : (
                           <span style={{
@@ -3211,7 +2791,7 @@ const Exam = () => {
                             alignItems: 'center',
                             gap: '4px'
                           }}>
-                            ○ Skipped (0 Marks)
+                            Skipped (0 Marks)
                           </span>
                         )}
                       </div>
@@ -3243,37 +2823,37 @@ const Exam = () => {
                           if (isCorrectChoice) {
                             optBorder = '#10b981';
                             optBg = 'rgba(16,185,129,0.12)';
-                            optTextColor = '#34d399';
+                            optTextColor = '#28724A';
                             tag = (
                               <span style={{
                                 fontSize: '0.76rem',
                                 fontWeight: 800,
-                                color: '#10b981',
+                                color: '#28724A',
                                 background: 'rgba(16,185,129,0.22)',
                                 border: '1px solid rgba(16,185,129,0.4)',
                                 padding: '4px 10px',
                                 borderRadius: '6px',
                                 marginLeft: 'auto'
                               }}>
-                                {isStudentChoice ? "✓ Your Answer (Correct +1 Mark)" : "✓ Correct Answer"}
+                                {isStudentChoice ? " Your Answer (Correct +1 Mark)" : " Correct Answer"}
                               </span>
                             );
                           } else if (isStudentChoice) {
                             optBorder = '#ef4444';
                             optBg = 'rgba(239,68,68,0.12)';
-                            optTextColor = '#f87171';
+                            optTextColor = '#A33B32';
                             tag = (
                               <span style={{
                                 fontSize: '0.76rem',
                                 fontWeight: 800,
-                                color: '#ef4444',
+                                color: '#A33B32',
                                 background: 'rgba(239,68,68,0.22)',
                                 border: '1px solid rgba(239,68,68,0.4)',
                                 padding: '4px 10px',
                                 borderRadius: '6px',
                                 marginLeft: 'auto'
                               }}>
-                                ✗ Your Answer (Incorrect)
+                                Your Answer (Incorrect)
                               </span>
                             );
                           }
@@ -3330,20 +2910,20 @@ const Exam = () => {
                               gap: '16px',
                               width: '100%',
                               padding: '16px 20px',
-                              background: isSelected ? 'rgba(124,58,237,0.15)' : 'var(--s2)',
-                              border: `1.5px solid ${isSelected ? 'var(--purple-l)' : 'var(--border)'}`,
+                              background: isSelected ? 'var(--color-soft-orange)' : 'var(--s2)',
+                              border: `1.5px solid ${isSelected ? 'var(--color-primary)' : 'var(--border)'}`,
                               borderRadius: '12px',
                               cursor: 'pointer',
                               textAlign: 'left',
                               transition: 'all 0.2s',
-                              boxShadow: isSelected ? '0 0 0 3px rgba(124,58,237,0.25)' : 'none'
+                              boxShadow: isSelected ? '0 0 0 3px rgba(230,95,0,0.18)' : 'none'
                             }}
                           >
                             <span style={{
                               width: '32px',
                               height: '32px',
                               borderRadius: '50%',
-                              background: isSelected ? 'var(--purple)' : 'var(--s1)',
+                              background: isSelected ? 'var(--color-primary)' : 'var(--s1)',
                               color: isSelected ? '#fff' : 'var(--text)',
                               display: 'flex',
                               alignItems: 'center',
@@ -3354,7 +2934,7 @@ const Exam = () => {
                             }}>
                               {String.fromCharCode(65 + idx)}
                             </span>
-                            <span style={{ fontSize: '1rem', color: isSelected ? 'var(--purple-l)' : 'var(--text)', fontWeight: isSelected ? 600 : 400 }}>
+                            <span style={{ fontSize: '1rem', color: isSelected ? 'var(--color-primary-hover)' : 'var(--text)', fontWeight: isSelected ? 600 : 400 }}>
                               {opt}
                             </span>
                           </button>
@@ -3367,14 +2947,14 @@ const Exam = () => {
                   {submitResult && (
                     <div style={{
                       marginTop: '22px',
-                      background: 'rgba(124,58,237,0.08)',
-                      border: '1.5px solid rgba(124,58,237,0.3)',
+                      background: 'var(--color-soft-orange)',
+                      border: '1.5px solid var(--color-light-orange)',
                       borderRadius: '12px',
                       padding: '18px 22px'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '1.25rem' }}>💡</span>
-                        <span style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--purple-l, #c084fc)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        <AIIcon size={18} />
+                        <span style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--color-primary, #E65F00)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                           Verified Solution & Conceptual Rationale
                         </span>
                       </div>
@@ -3382,8 +2962,8 @@ const Exam = () => {
                         {currRev?.explanation || questions[currentQ].explanation || "Derived directly from KCET syllabus textbook principles and standard formulas."}
                       </div>
                       {currRev?.ai_insight && (
-                        <div style={{ fontSize: '0.85rem', color: 'var(--muted, #9ca3af)', borderTop: '1px solid rgba(124,58,237,0.2)', paddingTop: '8px', marginTop: '8px' }}>
-                          <strong style={{ color: 'var(--purple-l)' }}>Examiner Note:</strong> {currRev.ai_insight}
+                        <div style={{ fontSize: '0.85rem', color: 'var(--muted, #64748b)', borderTop: '1px solid var(--color-light-orange)', paddingTop: '8px', marginTop: '8px' }}>
+                          <strong style={{ color: 'var(--color-primary)' }}>Examiner Note:</strong> {currRev.ai_insight}
                         </div>
                       )}
                     </div>
@@ -3415,7 +2995,7 @@ const Exam = () => {
                         padding: '6px 14px'
                       }}
                     >
-                      ⚡ Jump to Next Mistake
+                      Priority Jump to Next Mistake
                     </button>
                   )
                 ) : (
@@ -3467,7 +3047,7 @@ const Exam = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '20px', marginBottom: '24px' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '1.8rem' }}>🤖</span>
+                  <AIIcon size={28} />
                   <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, color: 'var(--text, #fff)' }}>
                     AI Performance & Syllabus Diagnostics
                   </h2>
@@ -3482,7 +3062,7 @@ const Exam = () => {
                 onClick={() => setShowAiModal(false)}
                 style={{ padding: '8px 16px', fontSize: '0.88rem', fontWeight: 700 }}
               >
-                ✕ Close Report
+                 Close Report
               </button>
             </div>
 
@@ -3499,7 +3079,7 @@ const Exam = () => {
                 gap: '14px',
                 textAlign: 'left'
               }}>
-                <span style={{ fontSize: '2.2rem' }}>🚫</span>
+                <span style={{ fontSize: '2.2rem' }}>Blocked</span>
                 <div>
                   <div style={{ fontWeight: 800, color: 'var(--red-l, #f87171)', fontSize: '1.02rem' }}>
                     Exam Automatically Submitted (Proctoring Violation)
@@ -3513,8 +3093,8 @@ const Exam = () => {
 
             {/* Top Score Card */}
             <div style={{
-              background: 'linear-gradient(135deg, rgba(124,58,237,0.12), rgba(37,99,235,0.08))',
-              border: '1px solid rgba(124,58,237,0.3)',
+              background: 'var(--color-soft-orange)',
+              border: '1px solid var(--color-light-orange)',
               borderRadius: '14px',
               padding: '22px',
               marginBottom: '24px'
@@ -3537,16 +3117,16 @@ const Exam = () => {
                     marginTop: '6px',
                     padding: '6px 14px',
                     borderRadius: '20px',
-                    background: evalSummary.percentage >= 75 ? 'rgba(16,185,129,0.2)' : evalSummary.percentage >= 50 ? 'rgba(124,58,237,0.25)' : 'rgba(239,68,68,0.2)',
-                    color: evalSummary.percentage >= 75 ? '#34d399' : evalSummary.percentage >= 50 ? '#c084fc' : '#f87171',
+                    background: evalSummary.percentage >= 75 ? 'rgba(16,185,129,0.2)' : evalSummary.percentage >= 50 ? 'rgba(230,95,0,0.25)' : 'rgba(239,68,68,0.2)',
+                    color: evalSummary.percentage >= 75 ? '#34d399' : evalSummary.percentage >= 50 ? '#E65F00' : '#f87171',
                     fontWeight: 700,
                     fontSize: '0.95rem',
-                    border: `1px solid ${evalSummary.percentage >= 75 ? 'rgba(16,185,129,0.4)' : evalSummary.percentage >= 50 ? 'rgba(124,58,237,0.4)' : 'rgba(239,68,68,0.4)'}`
+                    border: `1px solid ${evalSummary.percentage >= 75 ? 'rgba(16,185,129,0.4)' : evalSummary.percentage >= 50 ? 'rgba(230,95,0,0.4)' : 'rgba(239,68,68,0.4)'}`
                   }}>
-                    ⚡ {evalSummary.band}
+                    Priority {evalSummary.band}
                   </div>
                   <div style={{ fontSize: '0.82rem', color: 'var(--muted, #9ca3af)', marginTop: '8px' }}>
-                    ⏱ {evalSummary.pacing}
+                    {evalSummary.pacing}
                   </div>
                 </div>
 
@@ -3567,8 +3147,8 @@ const Exam = () => {
               </div>
 
               {/* AI Verdict Quote */}
-              <div style={{ marginTop: '18px', padding: '12px 16px', background: 'rgba(0,0,0,0.25)', borderRadius: '10px', borderLeft: '4px solid var(--purple, #7c3aed)' }}>
-                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--purple-l, #c084fc)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+              <div style={{ marginTop: '18px', padding: '12px 16px', background: 'rgba(0,0,0,0.25)', borderRadius: '10px', borderLeft: '4px solid var(--color-primary, #E65F00)' }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--color-primary, #E65F00)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
                   AI Evaluator Verdict
                 </div>
                 <div style={{ fontSize: '0.9rem', color: 'var(--text, #e5e7eb)', lineHeight: 1.5 }}>
@@ -3581,21 +3161,21 @@ const Exam = () => {
             {(evalSummary.blueprintPerf || Object.keys(evalSummary.subtypeMap).length > 0) && (
               <div style={{
                 background: 'var(--s2, #1a1d26)',
-                border: '1px solid rgba(124,58,237,0.3)',
+                border: '1px solid var(--color-light-orange)',
                 borderRadius: '14px',
                 padding: '20px',
                 marginBottom: '26px'
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '1.25rem' }}>🎯</span>
+                    <span style={{ fontSize: '1.25rem' }}>Target</span>
                     <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text, #fff)' }}>
                       KCET Blueprint & Calculation Breakdown Diagnostic
                     </h3>
                   </div>
                   {evalSummary.blueprintPerf?.type && (
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '4px 10px', borderRadius: '12px', background: 'rgba(124,58,237,0.2)', color: 'var(--purple-l, #c084fc)', border: '1px solid rgba(124,58,237,0.4)' }}>
-                      {evalSummary.blueprintPerf.type === 'physics' ? '⚡ Physics 55% Calculations / 45% Theory Pattern' : '🧪 Chemistry 10% Numericals / 90% Facts Pattern'}
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '4px 10px', borderRadius: '12px', background: 'rgba(230,95,0,0.2)', color: 'var(--color-primary, #E65F00)', border: '1px solid rgba(230,95,0,0.4)' }}>
+                      {evalSummary.blueprintPerf.type === 'physics' ? 'Physics 55% Calculations / 45% Theory Pattern' : 'Chemistry 10% Numericals / 90% Facts Pattern'}
                     </span>
                   )}
                 </div>
@@ -3629,8 +3209,8 @@ const Exam = () => {
                 </div>
 
                 {evalSummary.blueprintDiag && (
-                  <div style={{ padding: '10px 14px', background: 'rgba(124,58,237,0.08)', borderRadius: '8px', borderLeft: '3px solid var(--purple, #7c3aed)', fontSize: '0.86rem', color: 'var(--text, #d1d5db)' }}>
-                    <strong style={{ color: 'var(--purple-l, #c084fc)' }}>Blueprint Strategy:</strong> {evalSummary.blueprintDiag}
+                  <div style={{ padding: '10px 14px', background: 'rgba(230,95,0,0.08)', borderRadius: '8px', borderLeft: '3px solid var(--color-primary, #E65F00)', fontSize: '0.86rem', color: 'var(--text, #d1d5db)' }}>
+                    <strong style={{ color: 'var(--color-primary, #E65F00)' }}>Blueprint Strategy:</strong> {evalSummary.blueprintDiag}
                   </div>
                 )}
               </div>
@@ -3640,7 +3220,7 @@ const Exam = () => {
             {Object.keys(evalSummary.topicMap).length > 0 && (
               <div style={{ marginBottom: '26px' }}>
                 <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '14px', color: 'var(--text, #fff)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>📊</span> Syllabus Topic Mastery Matrix
+                  <span>Analytics</span> Syllabus Topic Mastery Matrix
                 </h3>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
@@ -3682,7 +3262,7 @@ const Exam = () => {
                 marginBottom: '26px'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '1.2rem' }}>💡</span>
+                  <AIIcon size={18} />
                   <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: '#fbbf24' }}>
                     Targeted AI Revision Action Plan
                   </h3>

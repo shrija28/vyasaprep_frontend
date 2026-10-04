@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Alert.css';
+import { CheckmarkIcon, CrossIcon, AlertIcon } from './icons';
 
 /**
  * Reusable Alert component
@@ -25,10 +26,10 @@ const Alert = ({
   };
 
   const icons = {
-    success: '✓',
-    error: '✕',
-    warning: '⚠',
-    info: 'ℹ',
+    success: <CheckmarkIcon size={16} />,
+    error: <CrossIcon size={16} />,
+    warning: <AlertIcon size={16} />,
+    info: <AlertIcon size={16} />,
   };
 
   const alertClasses = `alert alert-${variant} ${className}`.trim();
@@ -47,8 +48,9 @@ const Alert = ({
           className="alert-close"
           onClick={handleDismiss}
           aria-label="Close alert"
+          type="button"
         >
-          ×
+          <CrossIcon size={16} />
         </button>
       )}
     </div>
