@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AdminPageHeader from '../../components/AdminPageHeader';
 
 const AdminStudents = () => {
   const [students, setStudents] = useState([]);
@@ -59,7 +60,7 @@ const AdminStudents = () => {
         .tab-group::-webkit-scrollbar { display:none; }
         .tab-btn { padding: 12px 16px; background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 0.88rem; font-weight: 600; transition: all 0.2s; border-bottom: 2px solid transparent; margin-bottom: -1px; }
         .tab-btn:hover { color: var(--text); }
-        .tab-btn.active { color: var(--purple-l, #a78bfa); border-bottom-color: var(--purple-l, #a78bfa); }
+        .tab-btn.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
         .student-table { table-layout: fixed; width: 100%; border-collapse: collapse; }
         .student-table-wrap { width:100%;overflow-x:auto;overflow-y:hidden; }
         .student-mobile-list { display:none; }
@@ -94,22 +95,20 @@ const AdminStudents = () => {
       <div className="bg-mesh"></div>
 
       <div className="main-wrap admin-students-wrap" style={{ maxWidth: '100%', padding: '24px 28px 80px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-          <div>
-            <h1 style={{ fontSize: '1.6rem', fontWeight: '800', margin: '0 0 3px' }}>Students Management</h1>
-            <p style={{ color: 'var(--muted)', margin: '0', fontSize: '0.82rem' }}>View and manage all students. Subscription/payment features are currently inactive / future feature.</p>
-          </div>
-          <button className="btn-outline" onClick={fetchStudents} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '14px', height: '14px' }}><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
-            Refresh
-          </button>
-        </div>
+        <AdminPageHeader
+          title="Students Management"
+          description="View and manage all students. Subscription/payment features are currently inactive / future feature."
+          actions={<button className="btn-outline" onClick={fetchStudents} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {loading ? <span className="btn-spinner" aria-hidden="true" /> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '14px', height: '14px' }}><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>}
+            {loading ? 'Refreshing...' : 'Refresh'}
+          </button>}
+        />
 
         {error && <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid #dc2626', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', color: '#991b1b', fontSize: '0.85rem' }}>{error}</div>}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: '12px', marginBottom: '24px' }}>
           <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--r)', padding: '16px', textAlign: 'center' }}>
-            <div style={{ fontSize: '1.6rem', fontWeight: '800', color: 'var(--purple-l,#a78bfa)' }}>{totalCount}</div>
+            <div style={{ fontSize: '1.6rem', fontWeight: '800', color: 'var(--color-primary)' }}>{totalCount}</div>
             <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Total Students</div>
           </div>
           <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--r)', padding: '16px', textAlign: 'center' }}>
@@ -117,7 +116,7 @@ const AdminStudents = () => {
             <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Institution-linked</div>
           </div>
           <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--r)', padding: '16px', textAlign: 'center' }}>
-            <div style={{ fontSize: '1.6rem', fontWeight: '800', color: 'var(--purple-l,#a78bfa)' }}>{directCount}</div>
+            <div style={{ fontSize: '1.6rem', fontWeight: '800', color: 'var(--color-primary)' }}>{directCount}</div>
             <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Direct Students</div>
           </div>
           <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--r)', padding: '16px', textAlign: 'center' }}>
@@ -129,7 +128,7 @@ const AdminStudents = () => {
         <div className="section-card">
           <div className="section-card-header" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', marginBottom: '16px' }}>
-              <div className="section-icon" style={{ background: 'linear-gradient(135deg,rgba(37,99,235,0.2),rgba(124,58,237,0.2))' }}>
+              <div className="section-icon" style={{ background: 'linear-gradient(135deg,rgba(230,95,0,0.12),rgba(255,240,227,0.8))' }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               </div>
               <div style={{ flex: '1' }}>
@@ -167,7 +166,7 @@ const AdminStudents = () => {
                     filteredStudents.map((stu, i) => (
                       <tr key={stu.id || i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                         <td style={{ padding: '12px 16px', fontWeight: 600 }}>{stu.display_name || stu.name || 'Student'}</td>
-                        <td style={{ padding: '12px 16px', fontFamily: 'monospace', color: 'var(--purple-l)' }}>{stu.kcet_student_id || stu.student_id || '—'}</td>
+                        <td style={{ padding: '12px 16px', fontFamily: 'monospace', color: 'var(--color-primary)' }}>{stu.kcet_student_id || stu.student_id || '—'}</td>
                         <td style={{ padding: '12px 16px', color: 'var(--muted)' }}>{stu.email || '—'}</td>
                         <td style={{ padding: '12px 16px' }}>{isInstitutionLinked(stu) ? 'Institution-linked' : 'Direct'}</td>
                         <td style={{ padding: '12px 16px' }}>{getInstitutionName(stu) || '—'}</td>

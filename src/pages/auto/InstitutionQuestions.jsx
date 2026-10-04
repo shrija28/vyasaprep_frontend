@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { QuestionsIcon } from '../../components/icons';
 
 const InstitutionQuestions = () => {
   const [questions, setQuestions] = useState([]);
@@ -288,17 +289,12 @@ const InstitutionQuestions = () => {
         {/* Header section card */}
         <div className="section-card" style={{ marginBottom: '20px' }}>
           <div className="section-card-header" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-            <div className="section-icon" style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(37,99,235,0.2))' }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '22px', height: '22px', color: 'var(--purple-l)' }}>
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-              </svg>
+            <div className="section-icon" style={{ background: 'var(--color-soft-orange)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px' }}>
+              <QuestionsIcon size={24} style={{ color: 'var(--color-primary)' }} />
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800 }}>Institution Question Bank</h2>
-              <p className="section-sub" style={{ margin: '4px 0 0', color: 'var(--muted)' }}>
+              <p className="section-sub" style={{ margin: '4px 0 0', color: '#64748B' }}>
                 View, filter, and manage all extracted MCQs stored in your institution's private question bank
               </p>
             </div>
@@ -323,8 +319,8 @@ const InstitutionQuestions = () => {
                   setCurrentPage(1);
                 }}
                 style={{
-                  background: filterSubject === '' ? 'rgba(124, 58, 237, 0.12)' : 'var(--s2)',
-                  border: filterSubject === '' ? '1px solid var(--purple-l)' : '1px solid var(--border)',
+                  background: filterSubject === '' ? 'var(--color-soft-orange)' : 'var(--color-surface-secondary)',
+                  border: filterSubject === '' ? '1px solid var(--color-light-orange)' : '1px solid var(--color-border)',
                   borderRadius: 'var(--rs)',
                   padding: '14px',
                   textAlign: 'center',
@@ -332,8 +328,8 @@ const InstitutionQuestions = () => {
                   transition: 'all 0.15s ease',
                 }}
               >
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--purple-l)' }}>{totalStored || totalQuestions}</div>
-                <div style={{ fontSize: '0.78rem', color: filterSubject === '' ? 'var(--purple-l)' : 'var(--muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '2px' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: filterSubject === '' ? 'var(--color-primary)' : 'var(--color-navy)' }}>{totalStored || totalQuestions}</div>
+                <div style={{ fontSize: '0.78rem', color: filterSubject === '' ? 'var(--color-primary)' : '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '2px' }}>
                   All Subjects
                 </div>
               </div>
@@ -345,8 +341,8 @@ const InstitutionQuestions = () => {
                     setCurrentPage(1);
                   }}
                   style={{
-                    background: filterSubject === subj ? 'rgba(124, 58, 237, 0.12)' : 'var(--s2)',
-                    border: filterSubject === subj ? '1px solid var(--purple-l)' : '1px solid var(--border)',
+                    background: filterSubject === subj ? 'var(--color-soft-orange)' : 'var(--color-surface-secondary)',
+                    border: filterSubject === subj ? '1px solid var(--color-light-orange)' : '1px solid var(--color-border)',
                     borderRadius: 'var(--rs)',
                     padding: '14px',
                     textAlign: 'center',
@@ -354,8 +350,8 @@ const InstitutionQuestions = () => {
                     transition: 'all 0.15s ease',
                   }}
                 >
-                  <div style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text)' }}>{counts[subj] || 0}</div>
-                  <div style={{ fontSize: '0.78rem', color: filterSubject === subj ? 'var(--purple-l)' : 'var(--muted)', fontWeight: 600, marginTop: '2px' }}>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--color-navy)' }}>{counts[subj] || 0}</div>
+                  <div style={{ fontSize: '0.78rem', color: filterSubject === subj ? 'var(--color-primary)' : '#64748B', fontWeight: 600, marginTop: '2px' }}>
                     {subj}
                   </div>
                 </div>
@@ -459,12 +455,12 @@ const InstitutionQuestions = () => {
             ) : error ? (
               <div style={{ textAlign: 'center', padding: '40px', color: 'var(--red-l)' }}>{error}</div>
             ) : questions.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--muted)' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📚</div>
-                <h3 style={{ margin: '0 0 8px 0', color: 'var(--text)' }}>
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: '#64748B' }}>
+                <div style={{ marginBottom: '16px' }}><QuestionsIcon size={48} style={{ color: 'var(--color-primary)' }} /></div>
+                <h3 style={{ margin: '0 0 8px 0', color: 'var(--color-navy)', fontWeight: 700 }}>
                   {filterSubject ? `No ${filterSubject} Questions Found` : searchQuery ? 'No Matching Questions Found' : 'No Questions in Institution Bank'}
                 </h3>
-                <p style={{ margin: '0 0 20px 0', fontSize: '0.9rem', maxWidth: '480px', marginInline: 'auto' }}>
+                <p style={{ margin: '0 0 20px 0', fontSize: '0.9rem', color: '#64748B', maxWidth: '480px', marginInline: 'auto' }}>
                   Upload question papers or textbooks in the Upload section to automatically extract and populate MCQs in your institution question bank.
                 </p>
                 <Link to="/institution/upload" className="btn-primary" style={{ textDecoration: 'none' }}>
@@ -484,15 +480,15 @@ const InstitutionQuestions = () => {
                       key={qId}
                       style={{
                         padding: '16px 20px',
-                        borderBottom: '1px solid var(--border)',
-                        background: isExpanded ? 'rgba(124, 58, 237, 0.03)' : 'transparent',
+                        borderBottom: '1px solid var(--color-border)',
+                        background: isExpanded ? 'var(--color-soft-orange)' : 'transparent',
                         transition: 'background 0.15s ease',
                       }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                            <span style={{ fontWeight: 'bold', color: 'var(--purple-l)', fontSize: '0.9rem' }}>#{qIndex}</span>
+                            <span style={{ fontWeight: 'bold', color: 'var(--color-primary)', fontSize: '0.9rem' }}>#{qIndex}</span>
                             <span
                               style={{
                                 fontSize: '0.75rem',
@@ -505,7 +501,7 @@ const InstitutionQuestions = () => {
                                     ? 'rgba(59, 130, 246, 0.15)'
                                     : subjectName === 'Chemistry'
                                     ? 'rgba(245, 158, 11, 0.15)'
-                                    : 'rgba(124, 58, 237, 0.15)',
+                                    : 'rgba(230, 95, 0, 0.15)',
                                 color:
                                   subjectName === 'Biology'
                                     ? '#10b981'
@@ -513,7 +509,7 @@ const InstitutionQuestions = () => {
                                     ? '#3b82f6'
                                     : subjectName === 'Chemistry'
                                     ? '#f59e0b'
-                                    : '#a78bfa',
+                                    : '#E65F00',
                                 fontWeight: 600,
                               }}
                             >
@@ -557,16 +553,16 @@ const InstitutionQuestions = () => {
                                         gap: '6px',
                                       }}
                                     >
-                                      <span style={{ fontWeight: 700, color: isCorrect ? '#10b981' : 'var(--purple-l)' }}>({opt.label})</span>
+                                      <span style={{ fontWeight: 700, color: isCorrect ? '#10b981' : 'var(--color-primary)' }}>({opt.label})</span>
                                       <span>{opt.text}</span>
-                                      {isCorrect && <span style={{ marginLeft: 'auto', fontWeight: 'bold', fontSize: '0.78rem' }}>✓ Correct</span>}
+                                      {isCorrect && <span style={{ marginLeft: 'auto', fontWeight: 'bold', fontSize: '0.78rem' }}> Correct</span>}
                                     </div>
                                   );
                                 })}
                               </div>
                               {explanation && (
-                                <div style={{ fontSize: '0.82rem', color: 'var(--muted)', fontStyle: 'italic', background: 'rgba(124, 58, 237, 0.05)', padding: '8px 12px', borderRadius: '6px', marginTop: '8px' }}>
-                                  💡 <strong>Explanation:</strong> {explanation}
+                                <div style={{ fontSize: '0.82rem', color: '#64748B', fontStyle: 'italic', background: 'var(--color-soft-orange)', padding: '8px 12px', borderRadius: '6px', marginTop: '8px' }}>
+                                  <strong>Explanation:</strong> {explanation}
                                 </div>
                               )}
                             </div>

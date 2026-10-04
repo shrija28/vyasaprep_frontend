@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthContext, AuthProvider } from './contexts/AuthContext';
 import './assets/css/style.css'; 
 import './assets/css/institution.css';
@@ -12,6 +12,8 @@ import InstitutionLayout from './layouts/InstitutionLayout';
 import Navbar from './components/Navbar';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import PublicInfoPage from './pages/PublicInfoPage';
+import StudentProfile from './pages/student/StudentProfile';
 
 // Auto-generated components
 import AdminAnalytics from './pages/auto/AdminAnalytics';
@@ -42,16 +44,14 @@ import Landing from './pages/auto/Landing';
 import Login from './pages/auto/Login';
 import NotFound from './pages/auto/NotFound';
 import Register from './pages/auto/Register';
-import StudentInstitutionDashboard from './pages/auto/StudentInstitutionDashboard';
 import StudentInstitutionExams from './pages/auto/StudentInstitutionExams';
 import StudentInstitutionLeaderboard from './pages/auto/StudentInstitutionLeaderboard';
-import StudentInstitutionPerformance from './pages/auto/StudentInstitutionPerformance';
 import Syllabus from './pages/auto/Syllabus';
 
 // Public Layout Wrapper
 const PublicLayout = ({ children }) => (
   <>
-    <Navbar role="" links={[{to:'/login', label:'Login'}, {to:'/register', label:'Register'}]} />
+    <Navbar variant="public" />
     {children}
   </>
 );
@@ -68,6 +68,33 @@ const InstitutionRouteGuard = () => {
   return <InstitutionLayout />;
 };
 
+const AdminRouteGuard = () => {
+  const { user, loading } = React.useContext(AuthContext);
+  const location = useLocation();
+  if (loading) return <div className="route-loading" role="status">Checking admin access...</div>;
+
+  if (!user) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+
+  const role = String(user.role || user.user_type || user.account_type || '').toLowerCase();
+  if (role === 'admin') return <AdminLayout />;
+  if (['institution', 'institution_admin'].includes(role)) {
+    return <Navigate to="/institution/dashboard" replace />;
+  }
+
+  const accountTypes = [user.student_subtype, user.account_type, user.user_type]
+    .map((value) => String(value || '').toLowerCase());
+  const isInstitutionStudent = accountTypes.some((type) =>
+    ['institutional', 'institution_student', 'institution', 'institution_linked'].includes(type)
+  ) || Boolean(
+    user.institution_id || user.institution?.id || user.institution_name || user.institution?.name ||
+    user.student?.institution_id || user.student?.institution_name
+  );
+
+  return <Navigate to={isInstitutionStudent ? '/student/institution/dashboard' : '/dashboard'} replace />;
+};
+
 function App() {
   return (
     <AuthProvider>
@@ -78,34 +105,39 @@ function App() {
           <Route path="/index" element={<PublicLayout><Index /></PublicLayout>} />
           <Route path="/login" element={<PublicLayout><LoginPage /></PublicLayout>} />
           <Route path="/register" element={<PublicLayout><RegisterPage /></PublicLayout>} />
+          <Route path="/student/register" element={<PublicLayout><RegisterPage /></PublicLayout>} />
           <Route path="/institution/register" element={<PublicLayout><InstitutionRegister /></PublicLayout>} />
           <Route path="/contact-us" element={<PublicLayout><ContactUs /></PublicLayout>} />
+          <Route path="/about" element={<PublicLayout><PublicInfoPage page="about" /></PublicLayout>} />
+          <Route path="/privacy" element={<PublicLayout><PublicInfoPage page="privacy" /></PublicLayout>} />
+          <Route path="/terms" element={<PublicLayout><PublicInfoPage page="terms" /></PublicLayout>} />
           <Route path="/config" element={<Config />} />
           <Route path="/invitation-accept" element={<PublicLayout><InvitationAccept /></PublicLayout>} />
 
           {/* Student Routes */}
           <Route element={<StudentLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<StudentProfile />} />
             <Route path="/exam" element={<Exam />} />
             <Route path="/subscription" element={<Navigate to="/dashboard" replace />} />
             <Route path="/syllabus" element={<Syllabus />} />
             <Route path="/student-pricing" element={<Navigate to="/dashboard" replace />} />
             
             {/* Institution Specific Student Routes */}
-            <Route path="/student-institution-dashboard" element={<StudentInstitutionDashboard />} />
+            <Route path="/student-institution-dashboard" element={<Dashboard />} />
             <Route path="/student-institution-exams" element={<StudentInstitutionExams />} />
             <Route path="/student-institution-leaderboard" element={<StudentInstitutionLeaderboard />} />
-            <Route path="/student-institution-performance" element={<StudentInstitutionPerformance />} />
+            <Route path="/student-institution-performance" element={<Navigate to="/dashboard" replace />} />
             
             <Route path="/student/institution" element={<Navigate to="/student/institution/dashboard" replace />} />
-            <Route path="/student/institution/dashboard" element={<StudentInstitutionDashboard />} />
+            <Route path="/student/institution/dashboard" element={<Dashboard />} />
             <Route path="/student/institution/exams" element={<StudentInstitutionExams />} />
             <Route path="/student/institution/leaderboard" element={<StudentInstitutionLeaderboard />} />
-            <Route path="/student/institution/performance" element={<StudentInstitutionPerformance />} />
+            <Route path="/student/institution/performance" element={<Navigate to="/dashboard" replace />} />
           </Route>
 
           {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminRouteGuard />}>
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="analytics" element={<AdminAnalytics />} />

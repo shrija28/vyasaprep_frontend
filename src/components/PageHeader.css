@@ -1,0 +1,78 @@
+/* ── Page Header Styles ────────────────────────────────────────────────── */
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-xl) 0;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-2xl);
+  flex-wrap: wrap;
+}
+
+.page-header-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.breadcrumb {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-md);
+}
+
+.page-header-title-block {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
+}
+
+.page-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, rgba(230, 95, 0, 0.1), rgba(246, 196, 83, 0.1));
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-h2);
+}
+
+.page-header-title {
+  font-size: var(--font-size-h2);
+  font-family: var(--font-display);
+  color: var(--color-navy);
+  margin: 0;
+  font-weight: var(--font-weight-bold);
+}
+
+.page-header-subtitle {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  margin: var(--spacing-sm) 0 0 0;
+}
+
+.page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    gap: var(--spacing-lg);
+  }
+
+  .page-header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .page-header-title {
+    font-size: var(--font-size-h3);
+  }
+}

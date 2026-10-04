@@ -1,0 +1,135 @@
+/* ── Alert Styles ──────────────────────────────────────────────────────── */
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  border: 1px solid;
+  box-sizing: border-box;
+  max-width: 100%;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alert-content {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-body);
+  flex-shrink: 0;
+}
+
+.alert-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-title {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-body);
+  margin-bottom: var(--spacing-xs);
+}
+
+.alert-message {
+  font-size: var(--font-size-small);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.alert-close {
+  background: none;
+  border: none;
+  font-size: var(--font-size-h3);
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.alert-close:hover {
+  opacity: 1;
+}
+
+.alert-close:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Variants ──────────────────────────────────────────────────────────── */
+
+.alert-success {
+  background: #ECFDF3;
+  border-color: #15803D;
+  color: #166534;
+}
+
+.alert-success .alert-icon {
+  background: #15803D;
+  color: white;
+}
+
+.alert-error {
+  background: #FEF2F2;
+  border-color: #B91C1C;
+  color: #991B1B;
+}
+
+.alert-error .alert-icon {
+  background: #B91C1C;
+  color: white;
+}
+
+.alert-warning {
+  background: #FFFBEB;
+  border-color: #B45309;
+  color: #78350F;
+}
+
+.alert-warning .alert-icon {
+  background: #B45309;
+  color: white;
+}
+
+.alert-info {
+  background: #EFF6FF;
+  border-color: #1D4ED8;
+  color: #1E3A5F;
+}
+
+.alert-info .alert-icon {
+  background: #1D4ED8;
+  color: white;
+}

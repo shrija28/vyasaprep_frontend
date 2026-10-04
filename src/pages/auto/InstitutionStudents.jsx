@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { CrossIcon } from '../../components/icons';
 import { generateStudentId } from '../../utils/studentId';
 
 const InstitutionStudents = () => {
@@ -279,7 +280,7 @@ const InstitutionStudents = () => {
                         <tr key={s.user_id}>
                           <td>
                             <div style={{ fontWeight: 600, color: 'var(--text)' }}>{s.display_name}</div>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--purple-l)', fontWeight: 600 }}>ID: {studentIdDisplay}</span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--color-primary)', fontWeight: 600 }}>ID: {studentIdDisplay}</span>
                           </td>
                           <td style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>{s.email}</td>
                           <td>
@@ -358,7 +359,7 @@ const InstitutionStudents = () => {
                       return (
                         <tr key={idx}>
                           <td>
-                            <span style={{ fontFamily: 'monospace', background: 'rgba(167, 139, 250, 0.1)', color: 'var(--purple-l)', padding: '3px 6px', borderRadius: '4px' }}>
+                            <span style={{ fontFamily: 'monospace', background: 'var(--color-soft-orange)', color: 'var(--color-primary)', padding: '3px 6px', borderRadius: '4px' }}>
                               {inv.code.slice(0, 16)}...
                             </span>
                           </td>
@@ -442,7 +443,7 @@ const InstitutionStudents = () => {
             ) : (
               <div>
                 <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid var(--green)', borderRadius: '8px', padding: '12px', marginBottom: '16px', color: 'var(--green-l)', fontSize: '0.85rem' }}>
-                  ✓ Invitation created! Valid for 7 days.
+                   Invitation created! Valid for 7 days.
                 </div>
 
                 <div style={{ marginBottom: '16px' }}>
@@ -512,12 +513,12 @@ const InstitutionStudents = () => {
           <div style={{ background: 'var(--card-bg, #0f172a)', border: '1px solid var(--border)', borderRadius: '16px', padding: '28px', maxWidth: '480px', width: '100%', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--purple), var(--blue))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', color: '#fff', fontWeight: 'bold' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', color: '#fff', fontWeight: 'bold' }}>
                   {(selectedStudent.display_name || 'S')[0].toUpperCase()}
                 </div>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text)' }}>{selectedStudent.display_name}</h3>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--purple-l)', fontWeight: 600 }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-primary)', fontWeight: 600 }}>
                     ID: {generateStudentId({ ...selectedStudent, is_institutional: true })}
                   </span>
                 </div>
@@ -525,9 +526,10 @@ const InstitutionStudents = () => {
               <button
                 type="button"
                 onClick={() => setSelectedStudent(null)}
+                aria-label="Close student details"
                 style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '1.4rem', cursor: 'pointer', padding: '0 4px' }}
               >
-                ✕
+                <CrossIcon size={18} />
               </button>
             </div>
 
@@ -546,7 +548,7 @@ const InstitutionStudents = () => {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem' }}>
                 <span style={{ color: 'var(--muted)' }}>Assigned Batch:</span>
-                <strong style={{ color: 'var(--purple-l)' }}>{selectedStudent.batch_name || 'Unassigned'}</strong>
+                <strong style={{ color: 'var(--color-primary)' }}>{selectedStudent.batch_name || 'Unassigned'}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem' }}>
                 <span style={{ color: 'var(--muted)' }}>Joined Date:</span>

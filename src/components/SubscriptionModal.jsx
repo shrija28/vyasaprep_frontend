@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 const SubscriptionModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
@@ -8,7 +7,7 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
     <>
       
 
-<div id="subscriptionModal" className="modal-overlay" style={{ display: isOpen ? "flex" : "none" }} role="dialog" aria-labelledby="modalTitle" aria-describedby="modalSubtitle" aria-modal="true" aria-hidden="true">
+<div id="subscriptionModal" className="modal-overlay" style={{ display: isOpen ? "flex" : "none" }} role="dialog" aria-labelledby="modalTitle" aria-describedby="modalSubtitle" aria-modal="true">
   <div className="modal-dialog subscription-modal">
     <div className="modal-header">
       <div className="modal-header-content">
@@ -32,13 +31,13 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
           <div className="pc-price"><span className="sym">₹</span><span className="amt">0</span><span className="per">/mo</span></div>
           <div className="pc-nosave"></div>
           <ul className="pc-feats">
-            <li className="yes"><span className="ic">✅</span><span>3–5 mock tests</span></li>
-            <li className="yes"><span className="ic">✅</span><span>Limited question bank access</span></li>
-            <li className="yes"><span className="ic">✅</span><span>Basic score analytics</span></li>
-            <li className="no"><span className="ic">❌</span><span>Unlimited mock tests</span></li>
-            <li className="no"><span className="ic">❌</span><span>Full topic analytics</span></li>
-            <li className="no"><span className="ic">❌</span><span>AI recommendations</span></li>
-            <li className="no"><span className="ic">❌</span><span>Weak-topic analysis</span></li>
+            <li className="yes"><span className="ic"></span><span>3–5 mock tests</span></li>
+            <li className="yes"><span className="ic"></span><span>Limited question bank access</span></li>
+            <li className="yes"><span className="ic"></span><span>Basic score analytics</span></li>
+            <li className="no"><span className="ic"></span><span>Unlimited mock tests</span></li>
+            <li className="no"><span className="ic"></span><span>Full topic analytics</span></li>
+            <li className="no"><span className="ic"></span><span>AI recommendations</span></li>
+            <li className="no"><span className="ic"></span><span>Weak-topic analysis</span></li>
           </ul>
           <button className="pc-cta outline" type="button" onClick={onClose} data-action="select-free" aria-label="Start with Free Plan">Start Free</button>
         </div>
@@ -51,13 +50,13 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
           <div className="pc-price"><span className="sym">₹</span><span className="amt">99</span></div>
           <div className="pc-nosave"></div>
           <ul className="pc-feats">
-            <li className="yes"><span className="ic">✅</span><span>Unlimited mock tests</span></li>
-            <li className="yes"><span className="ic">✅</span><span>KCET premium question bank</span></li>
-            <li className="yes"><span className="ic">✅</span><span>Topic-wise analytics</span></li>
-            <li className="yes"><span className="ic">✅</span><span>Weak-topic analysis</span></li>
-            <li className="yes"><span className="ic">✅</span><span>AI recommendations</span></li>
-            <li className="yes"><span className="ic">✅</span><span>Performance reports</span></li>
-            <li className="yes"><span className="ic">✅</span><span>Leaderboard ranking</span></li>
+            <li className="yes"><span className="ic"></span><span>Unlimited mock tests</span></li>
+            <li className="yes"><span className="ic"></span><span>KCET premium question bank</span></li>
+            <li className="yes"><span className="ic"></span><span>Topic-wise analytics</span></li>
+            <li className="yes"><span className="ic"></span><span>Weak-topic analysis</span></li>
+            <li className="yes"><span className="ic"></span><span>AI recommendations</span></li>
+            <li className="yes"><span className="ic"></span><span>Performance reports</span></li>
+            <li className="yes"><span className="ic"></span><span>Leaderboard ranking</span></li>
           </ul>
           <button className="pc-cta trial" type="button" onClick={onClose} data-action="select-trial" data-plan-id="" aria-label="Start 7-Day Premium Trial for ₹99">Start 7-Day Trial — ₹99</button>
         </div>
@@ -70,13 +69,13 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
           <div className="pc-price"><span className="sym">₹</span><span className="amt">349</span><span className="per">/month</span></div>
           <div className="pc-nosave"></div>
           <ul className="pc-feats">
-            <li className="yes"><span className="ic">✅</span><span>Unlimited mock tests</span></li>
-            <li className="yes"><span className="ic">✅</span><span>KCET premium question bank</span></li>
-            <li className="yes"><span className="ic">✅</span><span>Topic-wise analytics</span></li>
-            <li className="yes"><span className="ic">✅</span><span>Weak-topic analysis</span></li>
-            <li className="yes"><span className="ic">✅</span><span>AI recommendations</span></li>
-            <li className="yes"><span className="ic">✅</span><span>Performance reports</span></li>
-            <li className="yes"><span className="ic">✅</span><span>Leaderboard ranking + medals</span></li>
+            <li className="yes"><span className="ic"></span><span>Unlimited mock tests</span></li>
+            <li className="yes"><span className="ic"></span><span>KCET premium question bank</span></li>
+            <li className="yes"><span className="ic"></span><span>Topic-wise analytics</span></li>
+            <li className="yes"><span className="ic"></span><span>Weak-topic analysis</span></li>
+            <li className="yes"><span className="ic"></span><span>AI recommendations</span></li>
+            <li className="yes"><span className="ic"></span><span>Performance reports</span></li>
+            <li className="yes"><span className="ic"></span><span>Leaderboard ranking + medals</span></li>
           </ul>
           <button className="pc-cta primary" type="button" onClick={onClose} data-action="select-monthly" data-plan-id="" aria-label="Subscribe to Pro Monthly for ₹349/month">Subscribe Monthly</button>
         </div>
@@ -88,13 +87,13 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
           <div className="pc-price"><span className="sym">₹</span><span className="amt">2,999</span><span className="per">/year</span></div>
           <div className="pc-save">Save ₹1,189/year</div>
           <ul className="pc-feats">
-            <li className="yes"><span className="ic">✅</span><span>Everything in Pro Monthly</span></li>
-            <li className="yes"><span className="ic">✅</span><span>12 months full access</span></li>
-            <li className="yes"><span className="ic">✅</span><span>Unlimited mock tests</span></li>
-            <li className="yes"><span className="ic">✅</span><span>KCET premium question bank</span></li>
-            <li className="yes"><span className="ic">✅</span><span>AI recommendations</span></li>
-            <li className="yes"><span className="ic">✅</span><span>Advanced performance reports</span></li>
-            <li className="yes"><span className="ic">✅</span><span>Priority feature access</span></li>
+            <li className="yes"><span className="ic"></span><span>Everything in Pro Monthly</span></li>
+            <li className="yes"><span className="ic"></span><span>12 months full access</span></li>
+            <li className="yes"><span className="ic"></span><span>Unlimited mock tests</span></li>
+            <li className="yes"><span className="ic"></span><span>KCET premium question bank</span></li>
+            <li className="yes"><span className="ic"></span><span>AI recommendations</span></li>
+            <li className="yes"><span className="ic"></span><span>Advanced performance reports</span></li>
+            <li className="yes"><span className="ic"></span><span>Priority feature access</span></li>
           </ul>
           <button className="pc-cta primary" type="button" onClick={onClose} data-action="select-yearly" data-plan-id="" aria-label="Subscribe to Pro Yearly for ₹2,999/year">Subscribe Yearly</button>
         </div>

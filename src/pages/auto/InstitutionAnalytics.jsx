@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { ChartIcon, ExamIcon, StudentsIcon } from '../../components/icons';
 
 const InstitutionAnalytics = () => {
   const [analytics, setAnalytics] = useState(null);
@@ -149,7 +150,7 @@ const InstitutionAnalytics = () => {
           <div className="kpi-tile" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Students in Cohort</span>
-              <span style={{ fontSize: '1.4rem' }}>👥</span>
+              <StudentsIcon size={22} />
             </div>
             <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text)' }}>
               {analytics ? analytics.total_students : '—'}
@@ -162,7 +163,7 @@ const InstitutionAnalytics = () => {
           <div className="kpi-tile" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Total Submissions</span>
-              <span style={{ fontSize: '1.4rem' }}>📝</span>
+              <ExamIcon size={22} />
             </div>
             <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text)' }}>
               {analytics ? analytics.total_submissions : '—'}
@@ -175,9 +176,9 @@ const InstitutionAnalytics = () => {
           <div className="kpi-tile" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Cohort Average</span>
-              <span style={{ fontSize: '1.4rem' }}>📈</span>
+              <ChartIcon size={22} />
             </div>
-            <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--purple-l, #a78bfa)' }}>
+            <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-primary, #E65F00)' }}>
               {analytics ? `${analytics.average_score}%` : '—'}
             </div>
             <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
@@ -249,7 +250,7 @@ const InstitutionAnalytics = () => {
                               color: isTop3 ? medalColor : 'var(--muted)',
                               border: isTop3 ? `1px solid ${medalColor}40` : 'none',
                             }}>
-                              {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}
+                              {rank}
                             </span>
                           </td>
                           <td>
@@ -265,8 +266,8 @@ const InstitutionAnalytics = () => {
                               fontSize: '0.78rem',
                               padding: '2px 8px',
                               borderRadius: '4px',
-                              background: 'rgba(167, 139, 250, 0.1)',
-                              color: 'var(--purple-l)',
+                              background: 'var(--color-soft-orange)',
+                              color: 'var(--color-primary)',
                             }}>
                               {stu.batch_name || 'Unassigned'}
                             </span>

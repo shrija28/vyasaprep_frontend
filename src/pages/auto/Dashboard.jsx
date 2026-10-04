@@ -1,20 +1,92 @@
-import React, { useState, useEffect } from 'react';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    import React, { useCallback, useState, useEffect } from 'react';
+import { Link, useLocation, useOutletContext } from 'react-router-dom';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, Filler
 } from 'chart.js';
 import { Bar, Line, Doughnut } from 'react-chartjs-2';
 
-import { generateStudentId } from '../../utils/studentId';
-import { normalizeExamSubjects } from '../../utils/examStore';
+import { extractStudentName, generateStudentId } from '../../utils/studentId';
+import {
+  AIIcon,
+  ChartIcon,
+  CheckmarkIcon,
+  DocumentIcon,
+  ExamIcon,
+  InstitutionsIcon,
+  LightningIcon,
+  QuestionsIcon,
+  SirenIcon,
+  TrophyIcon,
+} from '../../components/icons';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, Filler);
 
+const toFiniteNumber = (value) => {
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+};
+
+const formatPercentage = (value) => {
+  const number = toFiniteNumber(value);
+  return number === null ? '—' : `${Number.isInteger(number) ? number : number.toFixed(1)}%`;
+};
+
+const ChartEmptyState = ({ title, description }) => (
+  <div className="chart-empty-state" role="status">
+    <span className="chart-empty-icon" aria-hidden="true"><ChartIcon size={18} /></span>
+    <span className="chart-empty-copy">
+      <strong>{title}</strong>
+      <span>{description}</span>
+    </span>
+  </div>
+);
+
+const normalizeAttempt = (attempt, index) => {
+  const score = toFiniteNumber(attempt.score ?? attempt.score_obtained);
+  const total = toFiniteNumber(attempt.total_marks ?? attempt.max_score);
+  const percentage = toFiniteNumber(attempt.score_pct ?? attempt.percentage) ?? (score !== null && total > 0 ? Math.round((score / total) * 100) : null);
+  const submittedAt = attempt.submitted_at || attempt.completed_at || attempt.date || '';
+  const submittedDate = submittedAt ? new Date(submittedAt) : null;
+  const elapsedSeconds = toFiniteNumber(attempt.time_taken_sec ?? attempt.timeTakenSec);
+  const rawStatus = String(attempt.status || '').trim();
+  const normalizedStatus = rawStatus.toLowerCase();
+  const attemptId = attempt.attempt_id || attempt.submission_id || attempt.id ||
+    (attempt.exam_set_id && submittedAt ? `${attempt.exam_set_id}:${submittedAt}` : `${attempt.exam_name || 'exam'}:${submittedAt || index}`);
+
+  return {
+    ...attempt,
+    attemptId: String(attemptId),
+    subject: String(attempt.subject || attempt.subject_name || '—'),
+    exam_name: String(attempt.exam_name || attempt.name || 'Exam'),
+    percentage,
+    scoreLabel: typeof attempt.score === 'string' && attempt.score.trim().endsWith('%')
+      ? attempt.score
+      : percentage !== null ? `${percentage}%` : score !== null && total !== null ? `${score}/${total}` : '—',
+    timeSeconds: elapsedSeconds,
+    timeLabel: typeof attempt.time === 'string' ? attempt.time : elapsedSeconds !== null
+      ? `${Math.floor(elapsedSeconds / 60)}m ${elapsedSeconds % 60}s`
+      : '—',
+    status: normalizedStatus === 'pass' ? 'Pass' : normalizedStatus === 'fail' ? 'Fail' : rawStatus || '—',
+    dateLabel: submittedDate && !Number.isNaN(submittedDate.getTime())
+      ? submittedDate.toLocaleDateString()
+      : submittedAt || '—',
+  };
+};
+
 const Dashboard = () => {
+  const location = useLocation();
+  const { studentProfile: currentStudent } = useOutletContext();
   const [data, setData] = useState(null);
+  const [dataError, setDataError] = useState('');
+  const [dashboardDataReady, setDashboardDataReady] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [availableSubjects, setAvailableSubjects] = useState([]);
-  const [studentProfile, setStudentProfile] = useState({ name: 'Student', id: '—' });
   const [lastUpdated, setLastUpdated] = useState('—');
+  const studentProfile = currentStudent ? {
+    name: extractStudentName(currentStudent),
+    id: generateStudentId(currentStudent),
+    institutionName: currentStudent.institution_name || currentStudent.institution?.name || null,
+  } : { name: 'Student', id: '—' };
 
   // Filters & Search
   const [selectedSubject, setSelectedSubject] = useState('all');
@@ -29,226 +101,68 @@ const Dashboard = () => {
   const [predictionResults, setPredictionResults] = useState(null);
   const [predictorError, setPredictorError] = useState('');
   const [activePredictionTab, setActivePredictionTab] = useState('all');
+  const [weakAreasExpanded, setWeakAreasExpanded] = useState(false);
 
-  // AI Rank Booster & Action Plan Checklist
-  const [simulatedBoostPct, setSimulatedBoostPct] = useState(10);
-  const [checkedActionSteps, setCheckedActionSteps] = useState(() => {
+  const fetchDashboardData = useCallback(async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
-      const saved = localStorage.getItem('smartkcet_action_steps');
-      return saved ? JSON.parse(saved) : {};
-    } catch (e) {
-      return {};
-    }
-  });
-
-  const toggleActionStep = (stepId) => {
-    setCheckedActionSteps((prev) => {
-      const next = { ...prev, [stepId]: !prev[stepId] };
-      try {
-        localStorage.setItem('smartkcet_action_steps', JSON.stringify(next));
-      } catch (e) {}
-      return next;
-    });
-  };
-
-  const resetActionSteps = () => {
-    setCheckedActionSteps({});
-    try {
-      localStorage.removeItem('smartkcet_action_steps');
-    } catch (e) {}
-  };
-
-  const fetchDashboardData = async () => {
-    setLoading(true);
-    try {
-      let apiData = null;
-      let res = await fetch('/api/student/dashboard-stats', { credentials: 'include' });
-      if (!res.ok) {
-        res = await fetch('/api/student/dashboard', { credentials: 'include' });
-      }
-      if (!res.ok) {
-        res = await fetch('/api/student/analytics', { credentials: 'include' });
-      }
-
-      if (res.ok) {
-        apiData = await res.json().catch(() => null);
-      }
-
-      // Determine logged-in student identity for strict data isolation
-      let currentStudentId = '';
-      if (studentProfile && studentProfile.id && studentProfile.id !== '—') {
-        currentStudentId = String(studentProfile.id).toLowerCase().trim();
-      } else {
-        const meRes = await fetch('/api/auth/me', { credentials: 'include' });
-        if (meRes.ok) {
-          const meData = await meRes.json();
-          currentStudentId = String(meData.kcet_student_id || meData.id || meData.sub || meData.email || '').toLowerCase().trim();
-          if (currentStudentId) {
-            localStorage.setItem('vyasaprep_active_student_id', currentStudentId);
-          }
-        }
-      }
-
-      if (!currentStudentId) {
-        currentStudentId = String(localStorage.getItem('vyasaprep_active_student_id') || '').toLowerCase().trim();
-      }
-
-      // Merge local submission records strictly for current student
-      const allLocalSubs = JSON.parse(localStorage.getItem('vyasaprep_submissions') || '[]');
-      const userLocalSubs = allLocalSubs.filter(s => {
-        if (!s) return false;
-        if (!currentStudentId) return false; // Do not leak submissions if student ID is unknown
-        const sId = String(s.student_id || s.user_id || s.sub || '').toLowerCase().trim();
-        return sId === currentStudentId || (sId && currentStudentId && (sId.includes(currentStudentId) || currentStudentId.includes(sId)));
+      const statsResponse = await fetch('/api/student/dashboard-stats', { credentials: 'include' });
+      if (!statsResponse.ok) throw new Error('Student performance data is temporarily unavailable.');
+      const apiData = await statsResponse.json();
+      const apiHistory = apiData?.examHistory ?? apiData?.exam_history;
+      const examHistory = (Array.isArray(apiHistory) ? apiHistory : []).filter(Boolean).map(normalizeAttempt);
+      const apiKpis = apiData?.kpis || {};
+      const aiAnalysis = apiData?.aiAnalysis ?? apiData?.ai_analysis ?? apiData?.performanceAnalysis ?? apiData?.performance_analysis ?? null;
+      setDataError('');
+      setData({
+        has_data: examHistory.length > 0,
+        kpis: {
+          examsTaken: toFiniteNumber(apiKpis.examsTaken ?? apiKpis.exams_taken),
+          submissions: toFiniteNumber(apiKpis.submissions),
+          avgScore: toFiniteNumber(apiKpis.avgScore ?? apiKpis.avg_score),
+          passRate: toFiniteNumber(apiKpis.passRate ?? apiKpis.pass_rate),
+          avgTime: toFiniteNumber(apiKpis.avgTime ?? apiKpis.avg_time ?? apiKpis.averageTime),
+          rank: apiKpis.rank ?? apiData?.rank ?? '—',
+          rankHint: apiKpis.rankHint ?? apiData?.rank_hint ?? '',
+        },
+        aiAnalysis,
+        examHistory,
       });
-
-      // Filter API submissions for current student if present
-      let apiSubs = [];
-      if (apiData && Array.isArray(apiData.examHistory)) {
-        apiSubs = apiData.examHistory.filter(s => {
-          if (!s) return false;
-          if (!currentStudentId) return true;
-          const sId = String(s.student_id || s.user_id || s.sub || '').toLowerCase().trim();
-          return !sId || sId === currentStudentId || sId.includes(currentStudentId) || currentStudentId.includes(sId);
-        });
-      }
-
-      const mergedSubs = [...userLocalSubs, ...apiSubs];
-      const userSubs = Array.from(new Map(mergedSubs.map(item => [item.id || item.submitted_at || item.exam_name, item])).values());
-
-      let finalData = null;
-
-      if (userSubs.length > 0) {
-        const totalTaken = userSubs.length;
-        const totalScorePctSum = userSubs.reduce((acc, s) => acc + (Number(s.percentage !== undefined ? s.percentage : (s.score || 0)) || 0), 0);
-        const calculatedAvgScore = Math.round(totalScorePctSum / Math.max(1, userSubs.length));
-        const passCount = userSubs.filter(s => (s.status === 'Pass' || (s.percentage || 0) >= 40)).length;
-        const calculatedPassRate = Math.round((passCount / Math.max(1, userSubs.length)) * 100);
-
-        finalData = {
-          has_data: true,
-          kpis: {
-            examsTaken: totalTaken,
-            submissions: totalTaken,
-            avgScore: calculatedAvgScore,
-            passRate: calculatedPassRate,
-            avgTime: Math.round(userSubs.reduce((acc, s) => acc + (s.time_taken_sec || 60), 0) / (userSubs.length * 60)),
-            rank: calculatedAvgScore >= 30 ? '#1' : '—'
-          },
-          topicData: {
-            labels: Array.from(new Set(userSubs.map(s => s.subject || 'General'))),
-            scores: Array.from(new Set(userSubs.map(s => s.subject || 'General'))).map(subj => {
-              const subList = userSubs.filter(s => (s.subject || 'General') === subj);
-              return Math.round(subList.reduce((acc, s) => acc + (Number(s.percentage !== undefined ? s.percentage : (s.score || 0)) || 0), 0) / subList.length);
-            })
-          },
-          setData: {
-            labels: userSubs.slice(0, 7).reverse().map((s, idx) => s.set_label ? `Attempt #${idx + 1}` : 'Exam'),
-            scores: userSubs.slice(0, 7).reverse().map(s => Number(s.percentage !== undefined ? s.percentage : (s.score || 0)) || 0)
-          },
-          passFailData: {
-            labels: ['Pass', 'Fail'],
-            counts: [passCount, Math.max(0, userSubs.length - passCount)]
-          },
-          examHistory: userSubs
-        };
-      } else {
-        finalData = {
-          has_data: false,
-          kpis: {
-            examsTaken: 0,
-            submissions: 0,
-            avgScore: 0,
-            passRate: 0,
-            avgTime: 0,
-            rank: '—'
-          },
-          topicData: { labels: ['Physics', 'Chemistry', 'Mathematics', 'Biology'], scores: [0, 0, 0, 0] },
-          setData: { labels: ['No Attempts'], scores: [0] },
-          passFailData: { labels: ['Pass', 'Fail'], counts: [0, 0] },
-          examHistory: []
-        };
-      }
-
-      if (finalData) {
-        setData(finalData);
-        const now = new Date();
-        setLastUpdated(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-      }
-    } catch (err) {
-      console.error('Failed to fetch real dashboard metrics:', err);
+      setLastUpdated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    } catch (error) {
+      setDataError(error.message || 'Student performance data is temporarily unavailable.');
+      console.error('Failed to fetch real dashboard metrics.');
     } finally {
+      setDashboardDataReady(true);
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    // 1. Fetch authenticated student profile
-    fetch('/api/auth/me', { credentials: 'include' })
-      .then(res => res.json())
-      .then(d => {
-        if (d.authenticated) {
-          setStudentProfile({
-            name: d.display_name || d.sub || 'Student',
-            id: generateStudentId(d),
-            institutionName: d.institution_name || d.institution_code || (d.student_subtype === 'institutional' ? (d.join_code || 'Institution Member') : null)
-          });
-        }
-      })
-      .catch(() => {});
+    fetchDashboardData(false);
 
-    // 2. Fetch available exams authorized for student
-    const fetchExamsList = () => {
-      fetch('/api/student/exams', { credentials: 'include' })
-        .then(res => res.json())
-        .then(d => {
-          if (!d) {
-            setAvailableSubjects([]);
-            return;
-          }
-          if (Array.isArray(d.subjects) && d.subjects.length > 0) {
-            setAvailableSubjects(d.subjects);
-          } else if (Array.isArray(d.exams) && d.exams.length > 0) {
-            const published = d.exams.filter(e => e.is_published !== false);
-            setAvailableSubjects(normalizeExamSubjects(published));
-          } else if (Array.isArray(d) && d.length > 0) {
-            const published = d.filter(e => e.is_published !== false);
-            setAvailableSubjects(normalizeExamSubjects(published));
-          } else {
-            setAvailableSubjects([]);
-          }
-        })
-        .catch(() => {
-          setAvailableSubjects([]);
-        });
-    };
-    fetchExamsList();
-
-    // 3. Fetch real performance data
-    fetchDashboardData();
-
-    // 4. Auto-update dashboard metrics whenever an exam is submitted, completed or created
-    const handleUpdate = () => {
-      fetchDashboardData();
-      fetchExamsList();
-    };
-
+    const handleUpdate = () => fetchDashboardData();
     window.addEventListener('exam-submitted', handleUpdate);
-    window.addEventListener('exam-completed', handleUpdate);
-    window.addEventListener('exam-created', handleUpdate);
-    window.addEventListener('exam-updated', handleUpdate);
-    window.addEventListener('storage', handleUpdate);
     window.addEventListener('focus', handleUpdate);
 
     return () => {
       window.removeEventListener('exam-submitted', handleUpdate);
-      window.removeEventListener('exam-completed', handleUpdate);
-      window.removeEventListener('exam-created', handleUpdate);
-      window.removeEventListener('exam-updated', handleUpdate);
-      window.removeEventListener('storage', handleUpdate);
       window.removeEventListener('focus', handleUpdate);
     };
-  }, []);
+  }, [fetchDashboardData]);
+
+  useEffect(() => {
+    if (location.hash === '#performance') {
+      if (!dashboardDataReady) return;
+
+      const frame = window.requestAnimationFrame(() => {
+        document.getElementById('performance')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [location.pathname, location.hash, dashboardDataReady]);
 
   const handlePredictColleges = async (rankOverride = null) => {
     const targetRank = rankOverride !== null ? rankOverride : predictorRank;
@@ -277,7 +191,7 @@ const Dashboard = () => {
         const errJson = await res.json().catch(() => ({}));
         setPredictorError(errJson.message || 'Unable to predict colleges for this rank.');
       }
-    } catch (err) {
+    } catch {
       setPredictorError('Network error while predicting colleges.');
     } finally {
       setPredictorLoading(false);
@@ -290,19 +204,19 @@ const Dashboard = () => {
     plugins: {
       legend: {
         position: 'bottom',
-        labels: { color: '#e8e8f4' }
+        labels: { color: '#475569' }
       }
     },
     scales: {
       y: {
         beginAtZero: true,
         max: 100,
-        grid: { color: 'rgba(255,255,255,0.05)' },
-        ticks: { color: '#6868a0' }
+        grid: { color: 'rgba(26,54,93,0.1)' },
+        ticks: { color: '#475569' }
       },
       x: {
         grid: { display: false },
-        ticks: { color: '#6868a0' }
+        ticks: { color: '#475569' }
       }
     }
   };
@@ -313,101 +227,13 @@ const Dashboard = () => {
     plugins: {
       legend: {
         position: 'bottom',
-        labels: { color: '#e8e8f4' }
+        labels: { color: '#475569' }
       }
     },
     cutout: '70%'
   };
 
-  let topicChartData = null;
-  let setChartData = null;
-  let passFailChartData = null;
-
-  if (data) {
-    topicChartData = {
-      labels: data.topicData.labels,
-      datasets: [{
-        label: 'Average Score (%)',
-        data: data.topicData.scores,
-        backgroundColor: 'rgba(124, 58, 237, 0.65)',
-        borderColor: 'rgba(124, 58, 237, 1)',
-        borderWidth: 1,
-        borderRadius: 6
-      }]
-    };
-
-    setChartData = {
-      labels: data.setData.labels.length > 0 ? data.setData.labels : ['No Attempts'],
-      datasets: [{
-        label: 'Score Trend (%)',
-        data: data.setData.scores.length > 0 ? data.setData.scores : [0],
-        borderColor: 'rgba(16, 185, 129, 1)',
-        backgroundColor: 'rgba(16, 185, 129, 0.15)',
-        fill: true,
-        tension: 0.35,
-        pointRadius: 4,
-        pointBackgroundColor: 'rgba(16, 185, 129, 1)'
-      }]
-    };
-
-    const hasPassFailData = data.passFailData.counts[0] > 0 || data.passFailData.counts[1] > 0;
-    passFailChartData = {
-      labels: hasPassFailData ? data.passFailData.labels : ['No Attempts'],
-      datasets: [{
-        data: hasPassFailData ? data.passFailData.counts : [1],
-        backgroundColor: hasPassFailData
-          ? ['rgba(16, 185, 129, 0.85)', 'rgba(239, 68, 68, 0.85)']
-          : ['rgba(255, 255, 255, 0.1)'],
-        borderWidth: 0
-      }]
-    };
-  }
-
-  // Score & Rank Impact Booster calculations
-  const calcRankForScore = (score) => {
-    const s = Math.max(0, Math.min(100, Number(score) || 0));
-    if (s >= 90) return Math.round(100 + (100 - s) * 240);
-    if (s >= 75) return Math.round(2500 + (90 - s) * 366.6);
-    if (s >= 60) return Math.round(8000 + (75 - s) * 800);
-    if (s >= 45) return Math.round(20000 + (60 - s) * 1666.6);
-    return Math.round(45000 + (45 - s) * 1222.2);
-  };
-
-  const currentAvgScore = data?.kpis?.avgScore || 0;
-  const currentRank = data?.aiAnalysis?.rank_booster?.current_rank || (currentAvgScore > 0 ? calcRankForScore(currentAvgScore) : 48000);
-  const simulatedTargetScore = Math.min(98, +(currentAvgScore + simulatedBoostPct).toFixed(1));
-  const simulatedBoostedRank = calcRankForScore(simulatedTargetScore);
-  const simulatedRankLeap = Math.max(50, currentRank - simulatedBoostedRank);
-  const simulatedMarksGain = +(simulatedBoostPct * 0.6).toFixed(1);
-
-  const actionSteps = data?.aiAnalysis?.action_plan || [
-    {
-      id: 'step-1',
-      title: 'Revise Core Formulas & NCERT Theory',
-      desc: 'Review key formulas and summary definitions in your weakest topics.',
-      category: 'Formulas & Theory',
-      badge: 'Step 1'
-    },
-    {
-      id: 'step-2',
-      title: 'Solve 15-20 Timed PYQs',
-      desc: 'Practice previous year questions with a 75-second timer per numerical.',
-      category: 'Targeted Practice',
-      badge: 'Step 2'
-    },
-    {
-      id: 'step-3',
-      title: 'Validate Mastery with a Mock Exam',
-      desc: 'Retake a mock test aiming for >= 75% accuracy to secure your rank leap.',
-      category: 'Mock Validation',
-      badge: 'Step 3'
-    }
-  ];
-
-  const completedStepsCount = actionSteps.filter((s) => !!checkedActionSteps[s.id]).length;
-  const progressPct = Math.round((completedStepsCount / (actionSteps.length || 1)) * 100);
-
-  // Filter exam history
+  // Apply the same filters to metrics, charts, and history.
   const filteredHistory = (data?.examHistory || []).filter(h => {
     if (selectedSubject !== 'all' && h.subject.toLowerCase() !== selectedSubject.toLowerCase()) return false;
     if (selectedStatus !== 'all' && h.status.toLowerCase() !== selectedStatus.toLowerCase()) return false;
@@ -420,9 +246,137 @@ const Dashboard = () => {
     return true;
   });
 
+  const scoredAttempts = filteredHistory.filter((attempt) => attempt.percentage !== null);
+  const statusAttempts = filteredHistory.filter((attempt) => ['Pass', 'Fail'].includes(attempt.status));
+  const timedAttempts = filteredHistory.filter((attempt) => attempt.timeSeconds !== null);
+  const passCount = statusAttempts.filter((attempt) => attempt.status === 'Pass').length;
+  const hasActiveFilters = selectedSubject !== 'all' || selectedStatus !== 'all' || Boolean(searchTerm.trim());
+  const filteredKpis = {
+    examsTaken: filteredHistory.length,
+    submissions: filteredHistory.length,
+    avgScore: scoredAttempts.length
+      ? Math.round(scoredAttempts.reduce((sum, attempt) => sum + attempt.percentage, 0) / scoredAttempts.length)
+      : null,
+    passRate: statusAttempts.length ? Math.round((passCount / statusAttempts.length) * 100) : null,
+    avgTime: timedAttempts.length
+      ? Math.round(timedAttempts.reduce((sum, attempt) => sum + attempt.timeSeconds, 0) / timedAttempts.length / 60)
+      : null,
+    rank: data?.kpis?.rank ?? '—',
+  };
+  const visibleKpis = hasActiveFilters && data ? filteredKpis : {
+    examsTaken: data?.kpis?.examsTaken,
+    submissions: data?.kpis?.submissions,
+    avgScore: data?.kpis?.avgScore,
+    passRate: data?.kpis?.passRate,
+    avgTime: data?.kpis?.avgTime,
+    rank: data?.kpis?.rank ?? '—',
+  };
+
+  const subjectScores = new Map();
+  scoredAttempts.forEach((attempt) => {
+    if (attempt.subject === '—') return;
+    const scores = subjectScores.get(attempt.subject) || [];
+    scores.push(attempt.percentage);
+    subjectScores.set(attempt.subject, scores);
+  });
+  const subjectAverages = Array.from(subjectScores, ([subject, scores]) => ({
+    subject,
+    score: Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length),
+  }));
+  const derivedAnalysis = {
+    strong_areas: subjectAverages.filter(({ score }) => score >= 75).map(({ subject, score }) => `${subject} (${score}%)`),
+    can_improve_areas: subjectAverages.filter(({ score }) => score >= 50 && score < 75).map(({ subject, score }) => `${subject} (${score}%)`),
+    weak_areas: subjectAverages.filter(({ score }) => score < 50).map(({ subject, score }) => `${subject} (${score}%)`),
+  };
+  const hasApiAnalysis = ['strong_areas', 'can_improve_areas', 'weak_areas'].some((key) =>
+    Array.isArray(data?.aiAnalysis?.[key]) && data.aiAnalysis[key].length > 0
+  );
+  const performanceAnalysis = !hasActiveFilters && scoredAttempts.length > 0 && hasApiAnalysis ? data.aiAnalysis : derivedAnalysis;
+  const hasPerformanceAnalysis = filteredHistory.length > 0 && scoredAttempts.length > 0;
+  const hasAnyHistory = (data?.examHistory || []).length > 0;
+  const scoreEmptyDescription = filteredHistory.length > 0
+    ? 'No valid score data was returned for these attempts.'
+    : hasAnyHistory ? 'Try clearing or changing the current filters.' : '';
+  const subjectEmptyState = {
+    title: scoreEmptyDescription
+      ? filteredHistory.length > 0 ? 'Score data unavailable' : 'No matching attempts'
+      : 'Subject performance will appear here',
+    description: scoreEmptyDescription || 'Complete a scored exam to start tracking your subject-wise performance.',
+  };
+  const progressionEmptyState = {
+    title: scoreEmptyDescription
+      ? filteredHistory.length > 0 ? 'Score data unavailable' : 'No matching attempts'
+      : 'Score progression will appear here',
+    description: scoreEmptyDescription || 'Complete a scored exam to start tracking your progress.',
+  };
+  const statusEmptyState = {
+    title: filteredHistory.length > 0
+      ? 'Pass/fail status unavailable'
+      : hasAnyHistory ? 'No matching attempts' : 'Pass vs Fail will appear here',
+    description: filteredHistory.length > 0
+      ? 'These attempts do not include a recorded result.'
+      : hasAnyHistory ? 'Try clearing or changing the current filters.' : 'Complete an exam with a recorded result to see this breakdown.',
+  };
+  const rankValue = String(visibleKpis.rank || '').trim();
+  const rankLabel = rankValue && rankValue !== '—' ? (rankValue.startsWith('#') ? rankValue : `#${rankValue}`) : '—';
+  const strongAreas = Array.isArray(performanceAnalysis?.strong_areas) ? performanceAnalysis.strong_areas : [];
+  const improveAreas = Array.isArray(performanceAnalysis?.can_improve_areas) ? performanceAnalysis.can_improve_areas : [];
+  const weakAreas = Array.isArray(performanceAnalysis?.weak_areas) ? performanceAnalysis.weak_areas : [];
+  const visibleWeakAreas = weakAreasExpanded ? weakAreas : weakAreas.slice(0, 5);
+
+  const subjectChartRows = subjectAverages;
+  const topicChartData = subjectChartRows.length > 0 ? {
+    labels: subjectChartRows.map(({ subject }) => subject),
+    datasets: [{
+      label: 'Average Score (%)',
+      data: subjectChartRows.map(({ score }) => score),
+      backgroundColor: 'rgba(230, 95, 0, 0.65)',
+      borderColor: 'rgba(230, 95, 0, 1)',
+      borderWidth: 1,
+      borderRadius: 6,
+    }],
+  } : null;
+  const progressionAttempts = [...scoredAttempts].sort((first, second) => {
+    const firstTime = Date.parse(first.submitted_at || first.completed_at || first.date || '');
+    const secondTime = Date.parse(second.submitted_at || second.completed_at || second.date || '');
+    if (!Number.isFinite(firstTime)) return Number.isFinite(secondTime) ? -1 : 0;
+    if (!Number.isFinite(secondTime)) return 1;
+    return firstTime - secondTime;
+  }).slice(-7);
+  const setChartData = progressionAttempts.length > 0 ? {
+    labels: progressionAttempts.map((attempt) => attempt.exam_name),
+    datasets: [{
+      label: 'Score (%)',
+      data: progressionAttempts.map((attempt) => attempt.percentage),
+      borderColor: '#1A365D',
+      backgroundColor: 'rgba(26, 54, 93, 0.12)',
+      fill: true,
+      tension: 0.25,
+      pointRadius: 4,
+      pointBackgroundColor: '#E65F00',
+    }],
+  } : null;
+  const passFailChartData = statusAttempts.length > 0 ? {
+    labels: ['Pass', 'Fail'],
+    datasets: [{
+      data: [passCount, statusAttempts.length - passCount],
+      backgroundColor: ['#25855A', '#C64D43'],
+      borderWidth: 0,
+    }],
+  } : null;
+
+  const kpiCards = [
+    { label: 'Exams Taken', value: visibleKpis.examsTaken ?? '—', Icon: ExamIcon, tone: 'orange' },
+    { label: 'Submissions', value: visibleKpis.submissions ?? '—', Icon: DocumentIcon, tone: 'navy' },
+    { label: 'Average Score', value: formatPercentage(visibleKpis.avgScore), Icon: ChartIcon, tone: 'yellow' },
+    { label: 'Pass Rate', value: formatPercentage(visibleKpis.passRate), Icon: CheckmarkIcon, tone: 'green' },
+    { label: 'Average Time', value: visibleKpis.avgTime == null ? '—' : `${visibleKpis.avgTime}m`, Icon: LightningIcon, tone: 'navy' },
+    { label: 'Rank', value: rankLabel, Icon: TrophyIcon, tone: 'orange', detail: data?.kpis?.rankHint },
+  ];
+
   return (
     <>
-      <main className="dash-main">
+      <main className="dash-main direct-student-dashboard">
         {/* Hero Header */}
         <div className="dash-hero">
           <div>
@@ -431,7 +385,7 @@ const Dashboard = () => {
           </div>
           <div className="dash-hero-right">
             <div className="last-updated" id="lastUpdated">Last updated: {lastUpdated}</div>
-            <button className="btn-outline" onClick={fetchDashboardData} disabled={loading}>
+            <button className="btn-outline" onClick={() => fetchDashboardData()} disabled={loading}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '16px', height: '16px' }}>
                 <polyline points="23 4 23 10 17 10" />
                 <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
@@ -441,8 +395,10 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {dataError && <p role="alert" style={{ color: '#991B1B', background: '#FEF2F2', padding: '12px 16px', borderRadius: '8px' }}>{dataError}</p>}
+
         {/* Student Profile Card */}
-        <div className="section-card" style={{ marginBottom: '20px', padding: '16px' }}>
+        <div className="section-card student-profile-summary" style={{ marginBottom: '20px', padding: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
             <div>
               <div style={{ color: 'var(--muted)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
@@ -457,23 +413,27 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>KCET Student ID:</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--purple-l)' }} id="studentKcetId">
+                  <div style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--color-primary)' }} id="studentKcetId">
                     {studentProfile.id}
                   </div>
                 </div>
                 {studentProfile.institutionName && (
                   <div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Institution:</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: '600', color: '#10b981' }} id="studentInstitution">
-                      🏫 {studentProfile.institutionName}
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '1.1rem', fontWeight: '600', color: 'var(--color-text-primary)' }} id="studentInstitution">
+                      <InstitutionsIcon size={18} /> {studentProfile.institutionName}
                     </div>
                   </div>
                 )}
               </div>
             </div>
             {data && !data.has_data && (
-              <div style={{ background: 'rgba(124, 58, 237, 0.1)', border: '1px solid rgba(124, 58, 237, 0.25)', borderRadius: '8px', padding: '8px 14px', fontSize: '0.85rem', color: 'var(--purple-l)' }}>
-                💡 Welcome! Complete your first mock exam below to see your live score, rank, and topic insights.
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--color-soft-orange)', border: '1px solid var(--color-light-orange)', borderRadius: '8px', padding: '8px 14px', fontSize: '0.85rem', color: 'var(--color-primary-hover)' }}>
+                <AIIcon size={18} />
+                <span>
+                  Complete an exam to see your recorded scores and subject insights.{' '}
+                  <Link to="/exam" style={{ color: 'inherit', fontWeight: 700 }}>Browse available exams</Link>
+                </span>
               </div>
             )}
           </div>
@@ -482,31 +442,21 @@ const Dashboard = () => {
         {/* Main Dashboard Content */}
         <div id="dashContent">
           {/* Filter Bar */}
-          <div className="dash-filters section-card">
+          <div className="dash-filters section-card student-dashboard-filters">
             <div className="filter-row">
               <div className="filter-group">
-                <label className="input-label">Subject</label>
-                <select 
-                  id="filterSubject" 
-                  className="select-input" 
-                  value={selectedSubject} 
-                  onChange={e => setSelectedSubject(e.target.value)}
-                >
+                <label className="input-label" htmlFor="filterSubject">Subject</label>
+                <select id="filterSubject" className="select-input" value={selectedSubject} onChange={(event) => setSelectedSubject(event.target.value)}>
                   <option value="all">All Subjects</option>
+                  <option value="Biology">Biology</option>
                   <option value="Physics">Physics</option>
                   <option value="Chemistry">Chemistry</option>
                   <option value="Mathematics">Mathematics</option>
-                  <option value="Biology">Biology</option>
                 </select>
               </div>
               <div className="filter-group">
-                <label className="input-label">Status</label>
-                <select 
-                  id="filterStatus" 
-                  className="select-input" 
-                  value={selectedStatus} 
-                  onChange={e => setSelectedStatus(e.target.value)}
-                >
+                <label className="input-label" htmlFor="filterStatus">Status</label>
+                <select id="filterStatus" className="select-input" value={selectedStatus} onChange={(event) => setSelectedStatus(event.target.value)}>
                   <option value="all">All</option>
                   <option value="pass">Pass</option>
                   <option value="fail">Fail</option>
@@ -515,135 +465,44 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Real KPI Row */}
+          {/* Attempt-derived KPIs */}
           <div className="kpi-row" id="kpiRow">
-            <div className="kpi-tile">
-              <div className="kpi-tile-icon purple">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M9 11l3 3L22 4" />
-                  <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
-                </svg>
-              </div>
-              <div className="kpi-tile-body">
-                <div className="kpi-tile-val" id="kpiStudents">
-                  {data ? data.kpis.examsTaken : 0}
+            {kpiCards.map(({ label, value, Icon, tone, detail }, index) => (
+              <article className="kpi-tile" key={label}>
+                <span className={`kpi-tile-icon ${tone}`} aria-hidden="true"><Icon size={19} /></span>
+                <div className="kpi-tile-body">
+                  <div className="kpi-tile-val" id={['kpiStudents', 'kpiSubmissions', 'kpiAvgScore', 'kpiPassRate', 'kpiAvgTime', 'kpiRankValue'][index]}>{value}</div>
+                  <div className="kpi-tile-label">{label}</div>
+                  {detail && <div className="kpi-tile-hint" id="kpiRankHint">{detail}</div>}
                 </div>
-                <div className="kpi-tile-label">Exams Taken</div>
-              </div>
-            </div>
-
-            <div className="kpi-tile">
-              <div className="kpi-tile-icon blue">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                </svg>
-              </div>
-              <div className="kpi-tile-body">
-                <div className="kpi-tile-val" id="kpiSubmissions">
-                  {data ? data.kpis.submissions : 0}
-                </div>
-                <div className="kpi-tile-label">Submissions</div>
-              </div>
-            </div>
-
-            <div className="kpi-tile">
-              <div className="kpi-tile-icon cyan">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="8" r="6" />
-                  <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
-                </svg>
-              </div>
-              <div className="kpi-tile-body">
-                <div className="kpi-tile-val" id="kpiAvgScore">
-                  {data ? data.kpis.avgScore : 0}%
-                </div>
-                <div className="kpi-tile-label">Avg Score</div>
-              </div>
-            </div>
-
-            <div className="kpi-tile">
-              <div className="kpi-tile-icon green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-                </svg>
-              </div>
-              <div className="kpi-tile-body">
-                <div className="kpi-tile-val" id="kpiPassRate">
-                  {data ? data.kpis.passRate : 0}%
-                </div>
-                <div className="kpi-tile-label">Pass Rate</div>
-              </div>
-            </div>
-
-            <div className="kpi-tile">
-              <div className="kpi-tile-icon orange">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-              </div>
-              <div className="kpi-tile-body">
-                <div className="kpi-tile-val" id="kpiAvgTime">
-                  {data ? data.kpis.avgTime : 0}m
-                </div>
-                <div className="kpi-tile-label">Avg Time</div>
-              </div>
-            </div>
-
-            <div className="kpi-tile">
-              <div className="kpi-tile-icon purple">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 15l-3 3h6l-3-3z" />
-                  <path d="M5 9l7-7 7 7" />
-                  <path d="M4 19h16" />
-                </svg>
-              </div>
-              <div className="kpi-tile-body">
-                <div className="kpi-tile-val" id="kpiRankValue">
-                  {data && data.kpis.rank && data.kpis.rank !== '—' ? `#${data.kpis.rank}` : '—'}
-                </div>
-                <div className="kpi-tile-label">Your Rank</div>
-                <div className="kpi-tile-hint" id="kpiRankHint" style={{ fontSize: '0.68rem', color: 'var(--muted)', marginTop: '2px', lineHeight: '1.2' }}>
-                  {data?.kpis?.rankHint || 'Score at least 30% on average to qualify on statewide leaderboard'}
-                </div>
-              </div>
-            </div>
+              </article>
+            ))}
           </div>
 
-          {/* Charts Row */}
-          <div className="charts-row">
-            <div className="chart-card section-card wide">
-              <div className="chart-card-header">
-                <h3>Subject Performance Average</h3>
+          {/* Charts from the same filtered attempts as the KPIs. */}
+          <div className="student-chart-grid">
+            <section className={`chart-card section-card student-chart-card ${topicChartData ? 'has-chart-data' : 'has-chart-empty'}`}>
+              <div className="chart-card-header"><h3>Subject Performance</h3></div>
+              <div className="chart-wrap">
+                {topicChartData ? <Bar data={topicChartData} options={chartOptions} /> : <ChartEmptyState {...subjectEmptyState} />}
               </div>
-              <div className="chart-wrap" style={{ minHeight: '260px' }}>
-                {data && <Bar data={topicChartData} options={chartOptions} />}
+            </section>
+            <section className={`chart-card section-card student-chart-card ${setChartData ? 'has-chart-data' : 'has-chart-empty'}`}>
+              <div className="chart-card-header"><h3>Score Progression</h3></div>
+              <div className="chart-wrap">
+                {setChartData ? <Line data={setChartData} options={chartOptions} /> : <ChartEmptyState {...progressionEmptyState} />}
               </div>
-            </div>
-          </div>
-
-          <div className="charts-row" style={{ marginTop: '20px' }}>
-            <div className="chart-card section-card">
-              <div className="chart-card-header">
-                <h3>Score Progression Trend</h3>
+            </section>
+            <section className={`chart-card section-card student-chart-card ${passFailChartData ? 'has-chart-data' : 'has-chart-empty'}`}>
+              <div className="chart-card-header"><h3>Pass vs Fail</h3></div>
+              <div className="chart-wrap">
+                {passFailChartData ? <Doughnut data={passFailChartData} options={doughnutOptions} /> : <ChartEmptyState {...statusEmptyState} />}
               </div>
-              <div className="chart-wrap" style={{ minHeight: '220px' }}>
-                {data && <Line data={setChartData} options={chartOptions} />}
-              </div>
-            </div>
-            <div className="chart-card section-card">
-              <div className="chart-card-header">
-                <h3>Pass vs Fail Distribution</h3>
-              </div>
-              <div className="chart-wrap" style={{ minHeight: '220px' }}>
-                {data && <Doughnut data={passFailChartData} options={doughnutOptions} />}
-              </div>
-            </div>
+            </section>
           </div>
 
           {/* AI Performance Analysis Section */}
-          <div className="ai-block section-card" id="aiBlock" style={{ marginTop: '20px' }}>
+          <section className="ai-block section-card student-analysis-card" id="performance">
             <div className="ai-block-header">
               <div className="ai-block-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -655,31 +514,32 @@ const Dashboard = () => {
               <div>
                 <h2>Performance Analysis</h2>
                 <p className="section-sub" id="aiAnalysisFor">
-                  {data?.has_data 
-                    ? `Live diagnostic across ${data.kpis.submissions} completed exam attempt${data.kpis.submissions > 1 ? 's' : ''}`
-                    : 'Personalized KCET strengths & weaknesses will appear here once you take an exam'}
+                  {hasPerformanceAnalysis
+                    ? `Analysis from ${filteredHistory.length} completed exam attempt${filteredHistory.length === 1 ? '' : 's'}`
+                    : hasAnyHistory && filteredHistory.length === 0
+                      ? 'No attempts match the current filters.'
+                      : 'Complete more exams to generate your performance analysis.'}
                 </p>
               </div>
-              <div className="ai-block-badge">RAG Powered</div>
             </div>
 
             <div className="ai-zones-grid">
               <div className="ai-zone strong">
                 <div className="ai-zone-header">
-                  <span className="zone-icon">💪</span>
+                  <span className="zone-icon"><TrophyIcon size={18} /></span>
                   <span>Strong Areas (≥ 75%)</span>
                   <span className="zone-count" id="strongCount">
-                    {data?.aiAnalysis?.strong_areas?.length || 0}
+                    {strongAreas.length}
                   </span>
                 </div>
                 <ul className="zone-items" id="strongItems">
-                  {(data?.aiAnalysis?.strong_areas || []).length > 0 ? (
-                    data.aiAnalysis.strong_areas.map((item, idx) => (
-                      <li key={idx}>✓ {item}</li>
+                  {strongAreas.length > 0 ? (
+                    strongAreas.map((item, idx) => (
+                      <li key={idx}>{item}</li>
                     ))
                   ) : (
-                    <li style={{ color: 'var(--muted)', fontStyle: 'italic' }}>
-                      {data?.has_data ? 'No topics ≥ 75% yet' : 'Take exams to identify strengths'}
+                    <li className="zone-empty-state">
+                      {hasPerformanceAnalysis ? 'No subjects at or above 75%.' : 'No scored subject data yet.'}
                     </li>
                   )}
                 </ul>
@@ -687,20 +547,20 @@ const Dashboard = () => {
 
               <div className="ai-zone improve">
                 <div className="ai-zone-header">
-                  <span className="zone-icon">📈</span>
+                  <span className="zone-icon"><ChartIcon size={18} /></span>
                   <span>Can Improve (50–74%)</span>
                   <span className="zone-count" id="improveCount">
-                    {data?.aiAnalysis?.can_improve_areas?.length || 0}
+                    {improveAreas.length}
                   </span>
                 </div>
                 <ul className="zone-items" id="improveItems">
-                  {(data?.aiAnalysis?.can_improve_areas || []).length > 0 ? (
-                    data.aiAnalysis.can_improve_areas.map((item, idx) => (
-                      <li key={idx}>• {item}</li>
+                  {improveAreas.length > 0 ? (
+                    improveAreas.map((item, idx) => (
+                      <li key={idx}>{item}</li>
                     ))
                   ) : (
-                    <li style={{ color: 'var(--muted)', fontStyle: 'italic' }}>
-                      {data?.has_data ? 'No topics in 50–74% range' : 'Pending practice'}
+                    <li className="zone-empty-state">
+                      {hasPerformanceAnalysis ? 'No subjects in the 50–74% range.' : 'No scored subject data yet.'}
                     </li>
                   )}
                 </ul>
@@ -708,20 +568,35 @@ const Dashboard = () => {
 
               <div className="ai-zone weak">
                 <div className="ai-zone-header">
-                  <span className="zone-icon">⚠️</span>
+                  <span className="zone-icon"><SirenIcon size={18} /></span>
                   <span>Weak Areas (&lt; 50%)</span>
                   <span className="zone-count" id="weakCount">
-                    {data?.aiAnalysis?.weak_areas?.length || 0}
+                    {weakAreas.length}
                   </span>
                 </div>
                 <ul className="zone-items" id="weakItems">
-                  {(data?.aiAnalysis?.weak_areas || []).length > 0 ? (
-                    data.aiAnalysis.weak_areas.map((item, idx) => (
-                      <li key={idx}>! {item}</li>
-                    ))
+                  {weakAreas.length > 0 ? (
+                    <>
+                      {visibleWeakAreas.map((item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ))}
+                      {weakAreas.length > 5 && (
+                        <li className="weak-area-disclosure">
+                          <button
+                            type="button"
+                            className="weak-areas-toggle"
+                            aria-expanded={weakAreasExpanded}
+                            aria-controls="weakItems"
+                            onClick={() => setWeakAreasExpanded((expanded) => !expanded)}
+                          >
+                            {weakAreasExpanded ? 'Show fewer weak areas' : `View all ${weakAreas.length} weak areas`}
+                          </button>
+                        </li>
+                      )}
+                    </>
                   ) : (
-                    <li style={{ color: 'var(--muted)', fontStyle: 'italic' }}>
-                      {data?.has_data ? 'No weak areas detected!' : 'Take exams to pinpoint gaps'}
+                    <li className="zone-empty-state">
+                      {hasPerformanceAnalysis ? 'No subjects below 50%.' : 'No scored subject data yet.'}
                     </li>
                   )}
                 </ul>
@@ -729,10 +604,10 @@ const Dashboard = () => {
             </div>
 
             {/* End AI Zones */}
-          </div>
+          </section>
 
           {/* KCET College Prediction based on Rank Section */}
-          <div className="section-card" id="collegePredictorSection" style={{ marginTop: '20px' }}>
+          <section className="section-card student-predictor-card" id="collegePredictorSection">
             <div className="ai-block-header">
               <div className="ai-block-icon" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -747,8 +622,8 @@ const Dashboard = () => {
             </div>
 
             {/* Controls Row */}
-            <div style={{ marginTop: '18px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 200px', minWidth: '180px' }}>
+            <div className="student-predictor-fields">
+              <div className="student-predictor-field">
                 <label style={{ fontSize: '0.78rem', color: 'var(--muted)', fontWeight: 600 }}>KCET Rank</label>
                 <input 
                   type="number" 
@@ -763,7 +638,7 @@ const Dashboard = () => {
                 />
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '0 1 180px', minWidth: '150px' }}>
+              <div className="student-predictor-field">
                 <label style={{ fontSize: '0.78rem', color: 'var(--muted)', fontWeight: 600 }}>Reservation Category</label>
                 <select 
                   className="select-input"
@@ -782,7 +657,7 @@ const Dashboard = () => {
                 </select>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '0 1 170px', minWidth: '140px' }}>
+              <div className="student-predictor-field">
                 <label style={{ fontSize: '0.78rem', color: 'var(--muted)', fontWeight: 600 }}>Location / City</label>
                 <select 
                   className="select-input"
@@ -796,8 +671,8 @@ const Dashboard = () => {
                 </select>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', justifyContent: 'flex-end', flex: '0 0 auto' }}>
-                <label style={{ fontSize: '0.78rem', color: 'transparent' }}>Action</label>
+              <div className="student-predictor-action">
+                <span aria-hidden="true" className="student-predictor-spacer" />
                 <button 
                   className="btn-primary" 
                   id="predictCollegesBtn"
@@ -807,13 +682,14 @@ const Dashboard = () => {
                     padding: '10px 22px',
                     fontSize: '0.92rem',
                     fontWeight: 700,
-                    background: 'linear-gradient(135deg, #10b981, #2563eb)',
+                    background: 'var(--color-primary)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px'
                   }}
                 >
-                  {predictorLoading ? 'Predicting...' : 'Predict Colleges 🎓'}
+                  {!predictorLoading && <InstitutionsIcon size={18} />}
+                  {predictorLoading ? 'Predicting...' : 'Predict Colleges'}
                 </button>
               </div>
             </div>
@@ -839,7 +715,7 @@ const Dashboard = () => {
                   style={{
                     background: 'var(--s2)',
                     border: '1px solid var(--border)',
-                    color: 'var(--purple-l)',
+                    color: 'var(--color-primary)',
                     padding: '3px 10px',
                     borderRadius: '12px',
                     fontSize: '0.76rem',
@@ -885,13 +761,13 @@ const Dashboard = () => {
                   </div>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     <span style={{ padding: '4px 12px', borderRadius: '16px', fontSize: '0.78rem', fontWeight: 700, background: 'rgba(16,185,129,0.18)', color: '#34d399', border: '1px solid rgba(16,185,129,0.4)' }}>
-                      🟢 Safe: {predictionResults.counts?.safe || 0}
+                      Safe: {predictionResults.counts?.safe || 0}
                     </span>
                     <span style={{ padding: '4px 12px', borderRadius: '16px', fontSize: '0.78rem', fontWeight: 700, background: 'rgba(234,179,8,0.18)', color: '#facc15', border: '1px solid rgba(234,179,8,0.4)' }}>
-                      🟡 Target: {predictionResults.counts?.target || 0}
+                      Target: {predictionResults.counts?.target || 0}
                     </span>
                     <span style={{ padding: '4px 12px', borderRadius: '16px', fontSize: '0.78rem', fontWeight: 700, background: 'rgba(239,68,68,0.18)', color: '#f87171', border: '1px solid rgba(239,68,68,0.4)' }}>
-                      🔴 Reach: {predictionResults.counts?.reach || 0}
+                      Reach: {predictionResults.counts?.reach || 0}
                     </span>
                   </div>
                 </div>
@@ -912,7 +788,7 @@ const Dashboard = () => {
                       color: activePredictionTab === 'safe' ? '#34d399' : 'var(--muted)'
                     }}
                   >
-                    🟢 Safe Colleges ({predictionResults.counts?.safe || 0})
+                    Safe Colleges ({predictionResults.counts?.safe || 0})
                   </button>
                   <button
                     type="button"
@@ -928,7 +804,7 @@ const Dashboard = () => {
                       color: activePredictionTab === 'target' ? '#facc15' : 'var(--muted)'
                     }}
                   >
-                    🟡 Target Matches ({predictionResults.counts?.target || 0})
+                    Target Matches ({predictionResults.counts?.target || 0})
                   </button>
                   <button
                     type="button"
@@ -944,7 +820,7 @@ const Dashboard = () => {
                       color: activePredictionTab === 'reach' ? '#f87171' : 'var(--muted)'
                     }}
                   >
-                    🔴 Ambitious / Reach ({predictionResults.counts?.reach || 0})
+                    Ambitious / Reach ({predictionResults.counts?.reach || 0})
                   </button>
                   <button
                     type="button"
@@ -955,9 +831,9 @@ const Dashboard = () => {
                       fontSize: '0.85rem',
                       fontWeight: 700,
                       cursor: 'pointer',
-                      border: activePredictionTab === 'all' ? '1px solid var(--purple)' : '1px solid var(--border)',
-                      background: activePredictionTab === 'all' ? 'rgba(124,58,237,0.2)' : 'var(--s1)',
-                      color: activePredictionTab === 'all' ? 'var(--purple-l)' : 'var(--muted)'
+                      border: activePredictionTab === 'all' ? '1px solid var(--color-primary)' : '1px solid var(--border)',
+                      background: activePredictionTab === 'all' ? 'var(--color-soft-orange)' : 'var(--s1)',
+                      color: activePredictionTab === 'all' ? 'var(--color-primary)' : 'var(--muted)'
                     }}
                   >
                     All Colleges ({predictionResults.total_colleges})
@@ -1018,10 +894,10 @@ const Dashboard = () => {
                                   borderRadius: '12px',
                                   fontSize: '0.72rem',
                                   fontWeight: 800,
-                                  background: col.tier === 1 ? 'rgba(124,58,237,0.2)' : 'rgba(255,255,255,0.08)',
-                                  color: col.tier === 1 ? 'var(--purple-l)' : 'var(--muted)',
+                                  background: col.tier === 1 ? 'var(--color-soft-orange)' : 'var(--s2)',
+                                  color: col.tier === 1 ? 'var(--color-primary)' : 'var(--muted)',
                                   whiteSpace: 'nowrap',
-                                  border: col.tier === 1 ? '1px solid rgba(124,58,237,0.4)' : '1px solid var(--border)'
+                                  border: col.tier === 1 ? '1px solid var(--color-primary)' : '1px solid var(--border)'
                                 }}>
                                   {col.tier_label}
                                 </span>
@@ -1029,7 +905,7 @@ const Dashboard = () => {
 
                               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap' }}>
                                 <span style={{ fontSize: '0.78rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                  📍 {col.location}
+                                  Location {col.location}
                                 </span>
                                 <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>•</span>
                                 <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text)' }}>
@@ -1050,7 +926,7 @@ const Dashboard = () => {
                                 marginBottom: '12px',
                                 border: `1px solid ${badgeColor}40`
                               }}>
-                                <span>{isSafe ? '✓' : isTarget ? '⚡' : '🎯'}</span>
+                                <span>{isSafe ? '' : isTarget ? 'Priority' : 'Target'}</span>
                                 <span>{col.chance_label} ({col.chance_pct}%)</span>
                               </div>
 
@@ -1089,11 +965,11 @@ const Dashboard = () => {
                 })()}
               </div>
             )}
-          </div>
+          </section>
 
 
           {/* Exam History Section */}
-          <div className="section-card results-card" style={{ marginTop: '20px' }}>
+          <section className="section-card results-card student-history-card">
             <div className="results-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
               <h3>My Exam History ({filteredHistory.length})</h3>
               <div className="results-search" style={{ maxWidth: '280px' }}>
@@ -1125,39 +1001,40 @@ const Dashboard = () => {
                 </thead>
                 <tbody>
                   {filteredHistory.length > 0 ? (
-                    filteredHistory.map((h, i) => (
-                      <tr key={i}>
+                    filteredHistory.map((h) => (
+                      <tr key={h.attemptId}>
                         <td><strong>{h.subject}</strong></td>
-                        <td>{h.exam_name || `${h.subject} Mock Exam`}</td>
-                        <td style={{ fontWeight: '600' }}>{h.score}</td>
-                        <td>{h.time}</td>
+                        <td>{h.exam_name}</td>
+                        <td style={{ fontWeight: '600' }}>{h.scoreLabel}</td>
+                        <td>{h.timeLabel}</td>
                         <td>
-                          <span style={{ 
+                          <span
+                            className={`history-status-badge ${h.status === 'Pass' ? 'is-pass' : h.status === 'Fail' ? 'is-fail' : 'is-neutral'}`}
+                            style={{
                             padding: '4px 10px', 
                             borderRadius: '4px', 
                             fontSize: '0.8rem',
                             fontWeight: '600',
-                            background: h.status === 'Pass' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
-                            color: h.status === 'Pass' ? 'var(--green-l)' : 'var(--red-l)'
-                          }}>
+                          }}
+                          >
                             {h.status}
                           </span>
                         </td>
-                        <td>{h.date}</td>
+                        <td>{h.dateLabel}</td>
                       </tr>
                     ))
                   ) : (
                     <tr>
                       <td colSpan="6" style={{ textAlign: 'center', padding: '36px', color: 'var(--muted)' }}>
-                        {data?.has_data ? (
+                        {hasAnyHistory ? (
                           'No exam attempts match your current search and filters.'
                         ) : (
                           <div>
-                            <div style={{ fontSize: '1.8rem', marginBottom: '8px' }}>📝</div>
+                            <div style={{ marginBottom: '8px', color: 'var(--color-primary)' }}><QuestionsIcon size={30} /></div>
                             <div style={{ fontWeight: '600', color: 'var(--text)', marginBottom: '4px' }}>
                               No Exam Attempts Yet
                             </div>
-                            <div>Take an available practice exam from the top section to record your first score!</div>
+                            <div>Choose an available practice exam to record your first score.</div>
                           </div>
                         )}
                       </td>
@@ -1166,7 +1043,7 @@ const Dashboard = () => {
                 </tbody>
               </table>
             </div>
-          </div>
+          </section>
         </div>
       </main>
     </>

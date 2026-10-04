@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { BiologyIcon, ChemistryIcon, DocumentIcon, FolderIcon, MathematicsIcon, PhysicsIcon } from '../../components/icons';
 
 const SUBJECTS = ['Biology', 'Physics', 'Chemistry', 'Mathematics'];
 
 const SUBJECT_ICONS = {
-  Biology: '🌱',
-  Physics: '⚡',
-  Chemistry: '🧪',
-  Mathematics: '📐',
+  Biology: BiologyIcon,
+  Physics: PhysicsIcon,
+  Chemistry: ChemistryIcon,
+  Mathematics: MathematicsIcon,
 };
 
 const InstitutionUpload = () => {
@@ -177,24 +178,33 @@ const InstitutionUpload = () => {
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        if (res.status === 401) {
-          setErrorMessage('Authentication required. Please log in first at /login.');
-        } else {
-          const msg = data.message || (data.detail && (data.detail.message || data.detail)) || data.error || 'Failed to upload files';
-          setErrorMessage(typeof msg === 'string' ? msg : JSON.stringify(msg));
-        }
+        const msg = data.message || (data.detail && (data.detail.message || data.detail)) || data.error || 'Failed to upload files';
+        setErrorMessage(typeof msg === 'string' ? msg : JSON.stringify(msg));
         setUploadStatus('error');
         return;
       }
 
-      setUploadStatus('done');
-      const filesCount = data.indexed_files || files.length;
-      const qCount = data.questions_extracted || 0;
-      setUploadMessage(`✓ Successfully indexed ${filesCount} file(s) with ${qCount} questions extracted for ${subject}!`);
-      setFiles([]);
+      const filesCount = Number(data.indexed_files || 0);
+      const qCount = Number(data.questions_extracted || 0);
+      await Promise.all([fetchQuestionCounts(), fetchIndexedFiles(subject)]);
 
-      fetchQuestionCounts();
-      fetchIndexedFiles(subject);
+      if (!qCount) {
+        if (filesCount > 0 || data.already_indexed?.length > 0) {
+          setUploadStatus('done');
+          setUploadMessage(filesCount > 0
+            ? `Successfully indexed ${filesCount} file(s), but no validated questions were extracted for ${subject}.`
+            : `No new files were indexed for ${subject}; the selected file(s) were already in the bank.`);
+          setFiles([]);
+        } else {
+          setUploadStatus('error');
+          setErrorMessage(data.warnings && data.warnings.length ? `No valid MCQs were extracted from the uploaded file(s): ${data.warnings.join(', ')}` : 'No valid questions were extracted from the uploaded file(s). Please review the document and try again.');
+        }
+        return;
+      }
+
+      setUploadStatus('done');
+      setUploadMessage(`Successfully indexed ${filesCount} file(s) and saved ${qCount} validated question(s) for ${subject}.`);
+      setFiles([]);
     } catch (err) {
       console.error(err);
       setUploadStatus('error');
@@ -206,7 +216,7 @@ const InstitutionUpload = () => {
     <>
       <div className="bg-mesh"></div>
 
-      <main className="main-wrap">
+      <main className="main-wrap institution-upload-wrap">
         {/* Upload Card */}
         <div className="section-card">
           <div className="section-card-header">
@@ -353,7 +363,7 @@ const InstitutionUpload = () => {
                   background: 'rgba(5, 150, 105, 0.12)',
                   border: '1px solid rgba(5, 150, 105, 0.35)',
                   borderRadius: 'var(--rs)',
-                  color: 'var(--green-l, #34d399)',
+                  color: 'var(--color-success-dark)',
                   fontSize: '0.88rem'
                 }}
               >
@@ -369,7 +379,7 @@ const InstitutionUpload = () => {
                   background: 'rgba(59, 130, 246, 0.1)',
                   border: '1px solid rgba(59, 130, 246, 0.3)',
                   borderRadius: 'var(--rs)',
-                  color: 'var(--blue-l, #60a5fa)',
+                  color: 'var(--color-navy)',
                   fontSize: '0.88rem',
                   display: 'flex',
                   alignItems: 'center',
@@ -393,9 +403,7 @@ const InstitutionUpload = () => {
               <div className="file-grid" id="fileGrid" style={{ marginTop: '16px' }}>
                 {files.map((file, idx) => (
                   <div key={`${file.name}-${idx}`} className="file-card">
-                    <div className="file-card-icon">
-                      {file.name.endsWith('.pdf') ? '📄' : file.name.endsWith('.docx') || file.name.endsWith('.doc') ? '📝' : '📃'}
-                    </div>
+                    <div className="file-card-icon"><DocumentIcon size={20} /></div>
                     <div className="file-card-info">
                       <div className="file-card-name" title={file.name}>{file.name}</div>
                       <div className="file-card-size">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
@@ -486,13 +494,13 @@ const InstitutionUpload = () => {
                 <div className="file-grid" id="indexedFileGrid">
                   {indexedFiles.map((f, i) => (
                     <div key={f.id || i} className="file-card uploaded">
-                      <div className="file-card-icon">📁</div>
+                      <div className="file-card-icon"><FolderIcon size={20} /></div>
                       <div className="file-card-info">
                         <div className="file-card-name" title={f.filename}>{f.filename}</div>
                         <div className="file-card-size">
                           {f.file_size ? `${(f.file_size / 1024).toFixed(1)} KB` : ''} · {f.chunk_count || 0} chunks
                         </div>
-                        <div className="file-card-status" style={{ display: 'block' }}>✓ Indexed</div>
+                        <div className="file-card-status" style={{ display: 'block', color: 'var(--color-success-dark)' }}> Indexed</div>
                       </div>
                     </div>
                   ))}
@@ -507,7 +515,7 @@ const InstitutionUpload = () => {
           <div className="section-card-header">
             <div
               className="section-icon"
-              style={{ background: 'linear-gradient(135deg,rgba(124,58,237,0.2),rgba(37,99,235,0.2))' }}
+              style={{ background: 'linear-gradient(135deg,rgba(230, 95, 0, 0.2),rgba(37,99,235,0.2))' }}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10" />
@@ -530,14 +538,15 @@ const InstitutionUpload = () => {
             >
               {SUBJECTS.map((subj) => {
                 const count = (questionCounts && questionCounts.counts && questionCounts.counts[subj]) || 0;
+                const SubjectIcon = SUBJECT_ICONS[subj];
 
                 return (
                   <div
                     key={subj}
                     onClick={() => setSubject(subj)}
                     style={{
-                      background: subject === subj ? 'rgba(124,58,237,0.08)' : 'var(--s2)',
-                      border: subject === subj ? '1.5px solid var(--purple-l)' : '1px solid var(--border)',
+                      background: subject === subj ? 'rgba(230, 95, 0, 0.08)' : 'var(--s2)',
+                      border: subject === subj ? '1.5px solid var(--color-primary)' : '1px solid var(--border)',
                       borderRadius: 'var(--rs)',
                       padding: '16px',
                       cursor: 'pointer',
@@ -545,8 +554,8 @@ const InstitutionUpload = () => {
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 600, color: 'var(--text)' }}>
-                        {SUBJECT_ICONS[subj]} {subj}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 600, color: 'var(--text)' }}>
+                        <SubjectIcon size={18} /> {subj}
                       </span>
                       <span
                         style={{
@@ -555,7 +564,7 @@ const InstitutionUpload = () => {
                           padding: '2px 8px',
                           borderRadius: '10px',
                           background: count > 0 ? 'rgba(5,150,105,0.15)' : 'rgba(217,119,6,0.15)',
-                          color: count > 0 ? 'var(--green-l)' : 'var(--yellow-l)'
+                          color: count > 0 ? 'var(--color-success-dark)' : 'var(--color-warning-dark)'
                         }}
                       >
                         {count} {count === 1 ? 'Question' : 'Questions'}
@@ -574,7 +583,7 @@ const InstitutionUpload = () => {
                       ></div>
                     </div>
 
-                    <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '8px' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '8px' }}>
                       {count} {count === 1 ? 'question' : 'questions'} indexed
                     </div>
                   </div>

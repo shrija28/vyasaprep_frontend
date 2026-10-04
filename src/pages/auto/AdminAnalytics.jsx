@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import AdminPageHeader from '../../components/AdminPageHeader';
 
 const AdminAnalytics = () => {
   const [submissions, setSubmissions] = useState([]);
@@ -127,30 +128,28 @@ const AdminAnalytics = () => {
 
   <main className="dash-main admin-analytics-wrap">
     
-    <div className="dash-hero">
-      <div>
-        <h1 className="dash-title">Admin <span className="hero-gradient">Analytics</span></h1>
-        <p className="dash-sub">Aggregate performance analytics across all students and subjects</p>
-      </div>
-      <div className="dash-hero-right">
+    <AdminPageHeader
+      title="Admin Analytics"
+      description="Aggregate performance analytics across all students and subjects"
+      actions={<>
         <div className="last-updated" id="lastUpdated">{error || (loading ? 'Loading analytics…' : `Last updated: ${updatedAt}`)}</div>
-        <button className="btn-outline" onClick={fetchAnalytics}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
-          Refresh
+        <button className="btn-outline" onClick={fetchAnalytics} disabled={loading}>
+          {loading ? <span className="btn-spinner" aria-hidden="true" /> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>}
+          {loading ? 'Refreshing...' : 'Refresh'}
         </button>
         <button className="btn-primary small" id="exportBtn" onClick={exportCsv}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Export CSV
         </button>
         {exportMessage && <div role="status" aria-live="polite" style={{ width: '100%', color: '#475569', fontSize: '0.8rem' }}>{exportMessage}</div>}
-      </div>
-    </div>
+      </>}
+    />
 
     
     {error && <div className="empty-state" style={{ display: 'block', color: '#991b1b' }}><h3>Analytics unavailable</h3><p>Unable to load analytics data. Please try again.</p></div>}
     {!loading && !error && filteredSubmissions.length === 0 && <div className="empty-state" style={{ display: 'block' }}><h3>No submissions found</h3><p>No submissions match the current filter criteria.</p></div>}
     <div className="empty-state" id="emptyState" style={{"display":"none"}}>
-      <div className="empty-icon">📊</div>
+      <div className="empty-icon">Analytics</div>
       <h3>No Submissions Found</h3>
       <p>No submissions match the current filter criteria. Try adjusting the filters above.</p>
     </div>
@@ -197,7 +196,7 @@ const AdminAnalytics = () => {
       
       <div className="kpi-row" id="kpiRow">
         <div className="kpi-tile">
-          <div className="kpi-tile-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+          <div className="kpi-tile-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
           <div className="kpi-tile-body">
             <div className="kpi-tile-val" id="kpiStudents">{loading ? '—' : metrics.students}</div>
             <div className="kpi-tile-label">Total Students</div>
@@ -258,7 +257,7 @@ const AdminAnalytics = () => {
       
       <div className="section-card results-card" style={{"marginTop":"20px"}}>
         <div className="results-header">
-          <h3>🏆 Student Leaderboard</h3>
+          <h3>Student Leaderboard</h3>
         </div>
         
         <div className="table-scroll">
@@ -293,13 +292,13 @@ const AdminAnalytics = () => {
           <table className="results-table">
             <thead>
               <tr>
-                <th >Student <span className="sort-icon">↕</span></th>
+                <th>Student</th>
                 <th>KCET ID</th>
-                <th >Subject <span className="sort-icon">↕</span></th>
-                <th >Set <span className="sort-icon">↕</span></th>
-                <th >Score <span className="sort-icon">↕</span></th>
-                <th >Time <span className="sort-icon">↕</span></th>
-                <th >Status <span className="sort-icon">↕</span></th>
+                <th>Subject</th>
+                <th>Set</th>
+                <th>Score</th>
+                <th>Time</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody id="resultsBody">{filteredSubmissions.map(item => <tr key={item.id}><td>{item.student_name || 'Student'}</td><td>{item.kcet_student_id || '—'}</td><td>{item.subject || '—'}</td><td>{item.set_label || '—'}</td><td>{Number(item.score_pct || 0).toFixed(1)}%</td><td>{Math.round(Number(item.time_taken_sec || 0) / 60)}m</td><td>{item.status || '—'}</td></tr>)}</tbody>

@@ -1,25 +1,123 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz@9..144&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* ──────────────────────────────────────────────────────────────────────
+     GLOBAL VYASAPREP DESIGN SYSTEM - UNIFIED TOKENS
+     This is the single source of truth for all platform styling.
+     Applied consistently across Student, Institution, Admin, and Public.
+     ────────────────────────────────────────────────────────────────────── */
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* ── PRIMARY BRAND COLORS ──────────────────────────────────────────── */
+  --color-primary: #E65F00;
+  --color-primary-hover: #B34A00;
+  --color-navy: #1A365D;
 
-  font: 18px/145% var(--sans);
+  /* ── TEXT COLORS ───────────────────────────────────────────────────── */
+  --color-text-primary: #1E293B;
+  --color-text-secondary: #64748B;
+  --color-text-muted: #94A3B8;
+
+  /* ── BACKGROUND & SURFACE COLORS ──────────────────────────────────── */
+  --color-background: #F7F5F1;
+  --color-surface: #FCFBF8;
+  --color-surface-secondary: #F3F0EA;
+
+  /* ── ACCENT COLORS ─────────────────────────────────────────────────── */
+  --color-soft-orange: #FFF0E3;
+  --color-light-orange: #FBE1CA;
+  --color-soft-yellow: #FFF6D9;
+  --color-warm-yellow: #F6C453;
+
+  /* ── STATUS COLORS ─────────────────────────────────────────────────── */
+  --color-success: #059669;
+  --color-success-light: #D1FAE5;
+  --color-success-dark: #065F46;
+  --color-warning: #D97706;
+  --color-warning-light: #FEF3C7;
+  --color-warning-dark: #92400E;
+  --color-error: #DC2626;
+  --color-error-light: #FEE2E2;
+  --color-error-dark: #7F1D1D;
+  --color-info: #0284C7;
+  --color-info-light: #E0F2FE;
+  --color-info-dark: #0C2340;
+
+  /* ── LEGACY ALIASES ──────────────────────────────────────────────── */
+  --purple: var(--color-primary);
+  --purple-l: var(--color-primary);
+  --blue: var(--color-navy);
+  --blue-l: #2D4C73;
+  --cyan: var(--color-navy);
+  --cyan-l: #4A678B;
+
+  /* ── BORDER COLORS ─────────────────────────────────────────────────── */
+  --color-border: #E2E8F0;
+  --color-border-light: #F1F5F9;
+
+  /* ── TYPOGRAPHY ────────────────────────────────────────────────────── */
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+
+  /* Font Sizes */
+  --font-size-display: clamp(2.5rem, 5vw, 3.5rem);
+  --font-size-h1: 2.5rem;
+  --font-size-h2: 2rem;
+  --font-size-h3: 1.5rem;
+  --font-size-h4: 1.25rem;
+  --font-size-body: 1rem;
+  --font-size-small: 0.875rem;
+  --font-size-tiny: 0.75rem;
+
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  /* ── SPACING ───────────────────────────────────────────────────────── */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+
+  /* ── BORDER RADIUS ─────────────────────────────────────────────────── */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-pill: 9999px;
+
+  /* ── SHADOWS ───────────────────────────────────────────────────────── */
+  --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-elevated: 0 12px 24px rgba(0, 0, 0, 0.12);
+
+  /* ── LEGACY COMPATIBILITY VARS ────────────────────────────────────── */
+  /* These maintain compatibility with existing components that use old names */
+  --text: var(--color-text-primary);
+  --text-h: var(--color-navy);
+  --bg: var(--color-surface);
+  --border: var(--color-border);
+  --code-bg: var(--color-surface-secondary);
+  --accent: var(--color-primary);
+  --accent-bg: rgba(230, 95, 0, 0.1);
+  --accent-border: rgba(230, 95, 0, 0.25);
+  --social-bg: var(--color-soft-orange);
+  --shadow: var(--shadow-card);
+
+  --sans: var(--font-body);
+  --heading: var(--font-display);
+  --mono: var(--font-mono);
+
+  font: 18px/145% var(--font-body);
   letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
+  color-scheme: light;
+  color: var(--color-text-primary);
+  background: var(--color-background);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -30,36 +128,18 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
 body {
   margin: 0;
+  min-width: 0;
+  font-family: var(--font-body);
 }
 
 #root {
   width: 100%;
-  max-width: 1600px;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
+  max-width: none;
+  margin: 0;
+  text-align: left;
+  border-inline: 0;
   min-height: 100svh;
   display: flex;
   flex-direction: column;

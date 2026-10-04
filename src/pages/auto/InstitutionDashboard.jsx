@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { subscribeToExamChanges } from '../../utils/examStore';
+import { StudentsIcon, ExamIcon, ChartIcon, TrophyIcon } from '../../components/icons';
 
 const InstitutionDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -115,77 +116,77 @@ const InstitutionDashboard = () => {
         {/* 1. Real KPI Summary Tiles */}
         <section className="kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
           <Link to="/institution/students" style={{ textDecoration: 'none' }}>
-            <div className="kpi-tile" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', transition: 'transform 0.2s', cursor: 'pointer' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 600 }}>TOTAL STUDENTS</span>
-                <span style={{ fontSize: '1.4rem' }}>👥</span>
+            <div className="kpi-tile" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '20px', transition: 'transform 0.2s', cursor: 'pointer' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '0.85rem', color: '#64748B', fontWeight: 600 }}>TOTAL STUDENTS</span>
+                <StudentsIcon size={20} style={{ color: 'var(--color-primary)' }} />
               </div>
-              <div style={{ fontSize: '2.2rem', fontWeight: 700, color: 'var(--text)' }}>
+              <div style={{ fontSize: '2.2rem', fontWeight: 700, color: 'var(--color-navy)' }}>
                 {loading ? '—' : totalStudents}
               </div>
-              <span style={{ fontSize: '0.8rem', color: 'var(--blue)' }}>Manage & Invite Students →</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--color-primary)' }}>Manage & Invite Students →</span>
             </div>
           </Link>
 
           <Link to="/institution/exams" style={{ textDecoration: 'none' }}>
-            <div className="kpi-tile" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', transition: 'transform 0.2s', cursor: 'pointer' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 600 }}>WEEKLY EXAMS</span>
-                <span style={{ fontSize: '1.4rem' }}>📝</span>
+            <div className="kpi-tile" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '20px', transition: 'transform 0.2s', cursor: 'pointer' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '0.85rem', color: '#64748B', fontWeight: 600 }}>WEEKLY EXAMS</span>
+                <ExamIcon size={20} style={{ color: 'var(--color-primary)' }} />
               </div>
-              <div style={{ fontSize: '2.2rem', fontWeight: 700, color: 'var(--text)' }}>
+              <div style={{ fontSize: '2.2rem', fontWeight: 700, color: 'var(--color-navy)' }}>
                 {loading ? '—' : exams.length}
               </div>
-              <span style={{ fontSize: '0.8rem', color: 'var(--blue)' }}>Build & Schedule Tests →</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--color-primary)' }}>Build & Schedule Tests →</span>
             </div>
           </Link>
 
           <Link to="/institution/analytics" style={{ textDecoration: 'none' }}>
-            <div className="kpi-tile" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', transition: 'transform 0.2s', cursor: 'pointer' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 600 }}>TEST SUBMISSIONS</span>
-                <span style={{ fontSize: '1.4rem' }}>📊</span>
+            <div className="kpi-tile" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '20px', transition: 'transform 0.2s', cursor: 'pointer' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '0.85rem', color: '#64748B', fontWeight: 600 }}>TEST SUBMISSIONS</span>
+                <ChartIcon size={20} style={{ color: 'var(--color-primary)' }} />
               </div>
-              <div style={{ fontSize: '2.2rem', fontWeight: 700, color: 'var(--text)' }}>
+              <div style={{ fontSize: '2.2rem', fontWeight: 700, color: 'var(--color-navy)' }}>
                 {loading ? '—' : (() => {
                   return Number(dashboardData?.total_submissions ?? dashboardData?.submissions_count ?? 0);
                 })()}
               </div>
-              <span style={{ fontSize: '0.8rem', color: 'var(--purple-l)' }}>View Live Leaderboard →</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--color-primary)' }}>View Live Leaderboard →</span>
             </div>
           </Link>
 
           <Link to="/institution/analytics" style={{ textDecoration: 'none' }}>
-            <div className="kpi-tile" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', transition: 'transform 0.2s', cursor: 'pointer' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 600 }}>CLASS AVERAGE</span>
-                <span style={{ fontSize: '1.4rem' }}>📈</span>
+            <div className="kpi-tile" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '20px', transition: 'transform 0.2s', cursor: 'pointer' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '0.85rem', color: '#64748B', fontWeight: 600 }}>CLASS AVERAGE</span>
+                <TrophyIcon size={20} style={{ color: 'var(--color-success)' }} />
               </div>
-              <div style={{ fontSize: '2.2rem', fontWeight: 700, color: '#10b981' }}>
+              <div style={{ fontSize: '2.2rem', fontWeight: 700, color: 'var(--color-success)' }}>
                 {loading ? '—' : (() => {
                   return `${Number(dashboardData?.average_score ?? dashboardData?.class_average ?? 0)}%`;
                 })()}
               </div>
-              <span style={{ fontSize: '0.8rem', color: '#10b981' }}>Accuracy Rate →</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--color-success)' }}>Accuracy Rate →</span>
             </div>
           </Link>
         </section>
 
         {/* 2. Getting Started & Quick Action Workflow */}
-        <section className="section-card" style={{ marginBottom: '24px', background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(37, 99, 235, 0.08))', border: '1px solid rgba(124, 58, 237, 0.3)' }}>
+        <section className="section-card" style={{ marginBottom: '24px', background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <div className="section-card-header">
             <div>
-              <h2 style={{ fontSize: '1.25rem', color: 'var(--text)' }}>🚀 Teacher-Led Next Steps: What You Can Do</h2>
-              <p className="section-sub">Follow these 3 simple steps to start testing and grading your students</p>
+              <h2 style={{ fontSize: '1.25rem', color: 'var(--color-navy)', fontWeight: 700 }}>Teacher-Led Next Steps: What You Can Do</h2>
+              <p className="section-sub" style={{ color: '#64748B', fontSize: '0.9rem', marginTop: '6px' }}>Follow these 3 simple steps to start testing and grading your students</p>
             </div>
           </div>
 
           <div className="section-body" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
-            <div style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div style={{ background: 'var(--color-background)', border: '1px solid var(--color-border)', borderRadius: '10px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontSize: '1.8rem', marginBottom: '8px' }}>👥</div>
-                <h3 style={{ fontSize: '1.05rem', margin: '0 0 6px', color: 'var(--text)' }}>1. Create Batches & Invite Students</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--muted)', margin: 0 }}>
+                <div style={{ color: 'var(--color-primary)', marginBottom: '8px' }}><StudentsIcon size={28} /></div>
+                <h3 style={{ fontSize: '1.05rem', margin: '0 0 6px', color: 'var(--color-navy)', fontWeight: 600 }}>1. Create Batches & Invite Students</h3>
+                <p style={{ fontSize: '0.85rem', color: '#64748B', margin: 0, lineHeight: 1.5 }}>
                   Create class sections (e.g. <em>PUC-II Section A</em>) and generate a single invitation link to share with your students.
                 </p>
               </div>
@@ -194,28 +195,28 @@ const InstitutionDashboard = () => {
               </Link>
             </div>
 
-            <div style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div style={{ background: 'var(--color-background)', border: '1px solid var(--color-border)', borderRadius: '10px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontSize: '1.8rem', marginBottom: '8px' }}>📝</div>
-                <h3 style={{ fontSize: '1.05rem', margin: '0 0 6px', color: 'var(--text)' }}>2. Build & Assign Weekly Tests</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--muted)', margin: 0 }}>
+                <div style={{ color: 'var(--color-primary)', marginBottom: '8px' }}><ExamIcon size={28} /></div>
+                <h3 style={{ fontSize: '1.05rem', margin: '0 0 6px', color: 'var(--color-navy)', fontWeight: 600 }}>2. Build & Assign Weekly Tests</h3>
+                <p style={{ fontSize: '0.85rem', color: '#64748B', margin: 0, lineHeight: 1.5 }}>
                   Pick a subject (Mathematics, Biology, Physics, Chemistry), choose questions count, set a 60-min timer, and assign to your batch.
                 </p>
               </div>
-              <Link to="/institution/exams" className="btn-primary" style={{ marginTop: '16px', textAlign: 'center' }}>
+              <Link to="/institution/exams" className="btn-primary" style={{ marginTop: '16px', textAlign: 'center', textDecoration: 'none' }}>
                 Open Test Builder →
               </Link>
             </div>
 
-            <div style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div style={{ background: 'var(--color-background)', border: '1px solid var(--color-border)', borderRadius: '10px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontSize: '1.8rem', marginBottom: '8px' }}>📊</div>
-                <h3 style={{ fontSize: '1.05rem', margin: '0 0 6px', color: 'var(--text)' }}>3. View Batch Rank Lists</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--muted)', margin: 0 }}>
-                  Instantly track student submissions, view leaderboard rankings (#1 🥇, #2 🥈), and analyze class average scores.
+                <div style={{ color: 'var(--color-primary)', marginBottom: '8px' }}><ChartIcon size={28} /></div>
+                <h3 style={{ fontSize: '1.05rem', margin: '0 0 6px', color: 'var(--color-navy)', fontWeight: 600 }}>3. View Batch Rank Lists</h3>
+                <p style={{ fontSize: '0.85rem', color: '#64748B', margin: 0, lineHeight: 1.5 }}>
+                  Instantly track student submissions, view leaderboard rankings by score, and analyze class average performance.
                 </p>
               </div>
-              <Link to="/institution/analytics" className="btn-primary" style={{ marginTop: '16px', textAlign: 'center', justifyContent: 'center' }}>
+              <Link to="/institution/analytics" className="btn-primary" style={{ marginTop: '16px', textAlign: 'center', textDecoration: 'none', justifyContent: 'center' }}>
                 View Batch Analytics →
               </Link>
             </div>
