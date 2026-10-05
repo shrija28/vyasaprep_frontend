@@ -38,7 +38,6 @@ import InstitutionQuestions from './pages/auto/InstitutionQuestions';
 import InstitutionRegister from './pages/auto/InstitutionRegister';
 import InstitutionStudents from './pages/auto/InstitutionStudents';
 import InstitutionSyllabus from './pages/auto/InstitutionSyllabus';
-import InstitutionUpload from './pages/auto/InstitutionUpload';
 import InvitationAccept from './pages/auto/InvitationAccept';
 import Landing from './pages/auto/Landing';
 import Login from './pages/auto/Login';
@@ -163,7 +162,6 @@ function App() {
             <Route path="students" element={<InstitutionStudents />} />
             <Route path="subscription" element={<Navigate to="/institution/dashboard" replace />} />
             <Route path="syllabus" element={<InstitutionSyllabus />} />
-            <Route path="upload" element={<InstitutionUpload />} />
           </Route>
 
           {/* Fallback route */}

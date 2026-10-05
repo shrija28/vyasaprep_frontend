@@ -3,7 +3,6 @@ import { Outlet } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import {
   DashboardIcon,
-  UploadIcon,
   QuestionsIcon,
   ExamIcon,
   StudentsIcon,
@@ -17,11 +16,6 @@ const InstitutionLayout = () => {
       to: '/institution/dashboard',
       label: 'Dashboard',
       icon: <DashboardIcon size={18} />
-    },
-    {
-      to: '/institution/upload',
-      label: 'Upload',
-      icon: <UploadIcon size={18} />
     },
     {
       to: '/institution/questions',
