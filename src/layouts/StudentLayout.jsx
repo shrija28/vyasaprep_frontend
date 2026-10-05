@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar';
 import BrandLogo from '../components/BrandLogo';
 import { AuthContext } from '../contexts/AuthContext';
 import { extractStudentName } from '../utils/studentId';
+import { isInstitutionLinkedStudent } from '../utils/studentExamAccess';
 import {
   DashboardIcon,
   ExamIcon,
@@ -28,19 +29,7 @@ const directStudentLinks = [
   { to: '/profile', label: 'Profile', icon: <StudentsIcon size={18} />, end: true },
 ];
 
-const hasInstitutionLink = (profile) => {
-  const accountTypes = [profile?.student_subtype, profile?.account_type, profile?.user_type]
-    .map((value) => String(value || '').toLowerCase());
-  return accountTypes.some((type) => ['institutional', 'institution_student', 'institution', 'institution_linked'].includes(type)) ||
-    Boolean(
-      profile?.institution_id ||
-      profile?.institution?.id ||
-      profile?.institution_name ||
-      profile?.institution?.name ||
-      profile?.student?.institution_id ||
-      profile?.student?.institution_name
-    );
-};
+const hasInstitutionLink = (profile) => isInstitutionLinkedStudent(profile);
 
 const StudentLayout = () => {
   const location = useLocation();

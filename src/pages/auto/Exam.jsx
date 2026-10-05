@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import BrandLogo from '../../components/BrandLogo';
+import { AuthContext } from '../../contexts/AuthContext';
 import { AIIcon, AlertIcon, BooksIcon, CameraIcon, ExamIcon, InstitutionsIcon, LockIcon, QuestionsIcon, SirenIcon } from '../../components/icons';
 import { generateStudentId } from '../../utils/studentId';
 import { normalizeExamSubjects } from '../../utils/examStore';
-import { flattenStudentExams, getStudentExamState } from '../../utils/studentExamAccess';
+import { flattenStudentExams, getStudentExamState, isInstitutionLinkedStudent } from '../../utils/studentExamAccess';
 
 // High-precision face & liveness analyzer that verifies an actual human face is present
 // and strictly rejects covered cameras, black frames, blank walls, and Windows "Camera Off" placeholders.
@@ -166,9 +167,22 @@ const analyzeFaceInVideo = async (video, prevFrameRef) => {
   }
 };
 
+const resolveTakeAnotherExamRoute = (profile = null) => (
+  isInstitutionLinkedStudent(profile) ? '/student/institution/exams' : '/exam'
+);
+
 const Exam = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = React.useContext(AuthContext);
+  const storedUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('user') || 'null');
+    } catch {
+      return null;
+    }
+  })();
+  const isInstitutionStudentRoute = isInstitutionLinkedStudent(user || storedUser);
 
   const [examSetId, setExamSetId] = useState(searchParams.get('set') || '');
   const [subject, setSubject] = useState(searchParams.get('subject') || 'General');
@@ -940,12 +954,31 @@ const Exam = () => {
     });
   };
 
-  // Handle going back to published exam selection
+  // Handle going back to the relevant exam selection page without breaking the student type flow.
   const handleBackToExamSelection = () => {
     if (cameraStream) {
       cameraStream.getTracks().forEach(t => t.stop());
       setCameraStream(null);
       setCameraActive(false);
+    }
+    const nextRoute = resolveTakeAnotherExamRoute(user || storedUser);
+    if (isInstitutionStudentRoute) {
+      setExamSetId('');
+      setQuestions([]);
+      setStarted(false);
+      setAlreadyCompleted(false);
+      setAccessBlockReason('');
+      setAccessVerified(true);
+      setSubmitResult(null);
+      setShowAiModal(false);
+      setAnswers({});
+      setSkipped(new Set());
+      setCurrentQ(0);
+      setNavFilter('all');
+      setLoadError('');
+      setSearchParams({});
+      navigate(nextRoute, { replace: true });
+      return;
     }
     setExamSetId('');
     setQuestions([]);
