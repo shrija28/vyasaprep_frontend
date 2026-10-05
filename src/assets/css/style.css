@@ -177,12 +177,44 @@ button { font-family: inherit; }
   box-sizing: border-box;
   border-radius: 10px;
 }
+.public-menu-toggle {
+  display: none;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid rgba(26,54,93,0.2);
+  border-radius: 8px;
+  background: #FCFBF8;
+  color: #1A365D;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.public-menu-toggle span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
 @media (max-width: 960px) {
   .public-navbar-inner {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px 16px !important;
     padding-block: 12px !important;
+  }
+  .public-menu-toggle {
+    display: inline-flex;
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+  .public-navbar:not(.public-menu-open) .public-links,
+  .public-navbar:not(.public-menu-open) .public-actions {
+    display: none !important;
   }
   .public-navbar .public-links {
     grid-column: 1 / -1;
