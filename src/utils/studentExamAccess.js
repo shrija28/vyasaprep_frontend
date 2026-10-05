@@ -1,3 +1,25 @@
+export const isInstitutionLinkedStudent = (profile = null) => {
+  if (!profile) return false;
+
+  const accountTypes = [
+    profile?.student_subtype,
+    profile?.account_type,
+    profile?.user_type,
+    profile?.role,
+    profile?.type,
+  ].map((value) => String(value || '').toLowerCase());
+
+  return accountTypes.some((type) => ['institutional', 'institution_student', 'institution', 'institution_linked'].includes(type)) || Boolean(
+    profile?.institution_id ||
+    profile?.institution?.id ||
+    profile?.institution_name ||
+    profile?.institution?.name ||
+    profile?.student?.institution_id ||
+    profile?.student?.institution_name ||
+    profile?.join_code
+  );
+};
+
 export const flattenStudentExams = (data) => {
   if (Array.isArray(data?.subjects)) {
     return data.subjects.flatMap((group) => (group.exams || []).map((exam) => ({
