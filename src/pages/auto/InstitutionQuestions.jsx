@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import { QuestionsIcon } from '../../components/icons';
 
 const InstitutionQuestions = () => {
@@ -298,16 +297,6 @@ const InstitutionQuestions = () => {
                 View, filter, and manage all extracted MCQs stored in your institution's private question bank
               </p>
             </div>
-            <div style={{ marginLeft: 'auto' }}>
-              <Link to="/institution/upload" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '15px', height: '15px' }}>
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                  <polyline points="17 8 12 3 7 8" />
-                  <line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
-                Upload &amp; Extract MCQs
-              </Link>
-            </div>
           </div>
 
           {/* Counts overview tiles */}
@@ -461,11 +450,8 @@ const InstitutionQuestions = () => {
                   {filterSubject ? `No ${filterSubject} Questions Found` : searchQuery ? 'No Matching Questions Found' : 'No Questions in Institution Bank'}
                 </h3>
                 <p style={{ margin: '0 0 20px 0', fontSize: '0.9rem', color: '#64748B', maxWidth: '480px', marginInline: 'auto' }}>
-                  Upload question papers or textbooks in the Upload section to automatically extract and populate MCQs in your institution question bank.
+                  Questions will appear here when they are available in your institution question bank.
                 </p>
-                <Link to="/institution/upload" className="btn-primary" style={{ textDecoration: 'none' }}>
-                  Upload &amp; Extract MCQs →
-                </Link>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column' }}>

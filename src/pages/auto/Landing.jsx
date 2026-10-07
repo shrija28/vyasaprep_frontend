@@ -76,7 +76,7 @@ const Landing = () => {
               </Button>
             </div>
 
-            <div style={styles.benefitRow}>
+            <div className="landing-benefit-row" style={styles.benefitRow}>
               {['Curated Question Sets', 'Track Your Progress', 'Compete with Peers'].map((label) => (
                 <div key={label} style={styles.benefitItem}>
                   <span style={styles.benefitIcon}></span>
@@ -87,9 +87,18 @@ const Landing = () => {
           </div>
 
           <div className="landing-hero-visual" style={styles.heroVisual}>
-            <div className="landing-hero-note">Discipline today,<br />results tomorrow.</div>
             <div className="landing-illustration-stage">
               <LearningIllustration />
+            </div>
+            <div className="landing-hero-message">
+              <div className="landing-hero-kicker">Learning / Progress</div>
+              <h2 className="landing-hero-note">Prepare with purpose.<br />Perform with confidence.</h2>
+              <p className="landing-hero-support">Track your growth with every practice session.</p>
+              <div className="landing-hero-steps" aria-label="Learn, practice, progress">
+                <span>LEARN</span><span aria-hidden="true">→</span>
+                <span>PRACTICE</span><span aria-hidden="true">→</span>
+                <span>PROGRESS</span>
+              </div>
             </div>
           </div>
         </section>
@@ -272,23 +281,24 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: '50%',
-    background: '#FFF0E3',
+    background: 'var(--color-navy)',
     color: '#E65F00',
     fontSize: '0.8rem',
     fontWeight: 700,
   },
   heroVisual: {
     position: 'relative',
-    minHeight: '420px',
+    minHeight: 0,
     background: '#FCFBF8',
     borderRadius: '2rem',
     border: '1px solid rgba(26,54,93,0.12)',
     overflow: 'visible',
     isolation: 'isolate',
-    display: 'flex',
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    padding: '1.5rem',
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+    alignItems: 'center',
+    gap: '1rem',
+    padding: 'clamp(1rem, 2vw, 1.5rem)',
   },
   sectionBlock: {
     background: '#F7F5F1',

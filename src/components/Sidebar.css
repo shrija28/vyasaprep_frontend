@@ -61,6 +61,23 @@
 
 /* ── Toggle Button ─────────────────────────────────────────────────────── */
 
+.sidebar-toggle-bars {
+  display: flex;
+  width: 18px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.sidebar-toggle-bars span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
 .sidebar-toggle {
   display: none;
   position: fixed;

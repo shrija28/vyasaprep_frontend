@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { Button, BrandLogo } from './index';
@@ -15,6 +15,8 @@ const Navbar = ({ role, links = [], variant = 'app' }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useContext(AuthContext);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const publicNavRef = useRef(null);
 
   const navItems = variant === 'public' ? publicLinks : links;
 
@@ -28,6 +30,22 @@ const Navbar = ({ role, links = [], variant = 'app' }) => {
     return () => window.cancelAnimationFrame(frame);
   }, [location.hash, location.pathname, variant]);
 
+  useEffect(() => {
+    if (variant !== 'public' || !mobileMenuOpen) return undefined;
+
+    const closeOnOutsideClick = (event) => {
+      if (!publicNavRef.current?.contains(event.target)) setMobileMenuOpen(false);
+    };
+    const closeOnScroll = () => setMobileMenuOpen(false);
+
+    document.addEventListener('pointerdown', closeOnOutsideClick);
+    window.addEventListener('scroll', closeOnScroll, { passive: true });
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsideClick);
+      window.removeEventListener('scroll', closeOnScroll);
+    };
+  }, [mobileMenuOpen, variant]);
+
   const handleLogout = async () => {
     if (logout) {
       await logout();
@@ -40,11 +58,31 @@ const Navbar = ({ role, links = [], variant = 'app' }) => {
 
   if (variant === 'public') {
     return (
-      <header className="public-navbar" style={styles.publicNav}>
+      <header
+        ref={publicNavRef}
+        className={`public-navbar${mobileMenuOpen ? ' public-menu-open' : ''}`}
+        style={styles.publicNav}
+        onClick={(event) => {
+          if (event.target.closest('a')) setMobileMenuOpen(false);
+        }}
+      >
         <div className="public-navbar-inner" style={styles.publicInner}>
           <BrandLogo size="md" />
 
-          <nav className="public-links" style={styles.publicLinks}>
+          <button
+            type="button"
+            className="public-menu-toggle"
+            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="public-navigation-menu"
+            onClick={() => setMobileMenuOpen((isOpen) => !isOpen)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+
+          <nav id="public-navigation-menu" className="public-links" style={styles.publicLinks}>
             {navItems.map((link) => (
               <Link
                 key={link.to}
@@ -151,7 +189,8 @@ const styles = {
     background: '#FCFBF8',
     border: '1px solid #E65F00',
     borderRadius: '10px',
-    padding: '8px 18px',
+    padding: '0 18px',
+    height: '38px',
     textDecoration: 'none',
     fontWeight: 600,
   },
