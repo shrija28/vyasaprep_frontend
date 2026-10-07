@@ -20,7 +20,7 @@ const AdminDashboard = () => {
     setLoading(true);
     setError('');
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 10000);
+    const timeoutId = window.setTimeout(() => controller.abort(), 30000);
     try {
       const dashRes = await fetch('/api/admin/dashboard', { credentials: 'include', signal: controller.signal });
       if (!dashRes.ok) {

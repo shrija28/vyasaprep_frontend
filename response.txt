@@ -1,0 +1,610 @@
+{
+  "alert_count": 1,
+  "alerts": [
+    {
+      "count": 2,
+      "message": "2 institutions with no active subscription",
+      "severity": "info",
+      "type": "inactive_institutions"
+    }
+  ],
+  "direct_students": [
+    {
+      "created_at": "2026-10-05T16:02:10.071813",
+      "email": "rakesh@gmail.com",
+      "id": "fafd2028-d8c4-4480-9898-f8bf1988454d",
+      "kcet_student_id": "VP0050",
+      "name": "rakesh",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-10-03T12:33:30.948353",
+      "email": "sumana@gmail.com",
+      "id": "4850e70c-dd93-4673-af26-264b36cf159e",
+      "kcet_student_id": "VP0049",
+      "name": "sumana",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-10-03T08:11:15.906871",
+      "email": "seetha1@gmail.com",
+      "id": "d8e00365-eb4c-4f3f-9730-9b6e4194e118",
+      "kcet_student_id": "VP0048",
+      "name": "v seetharama",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-10-03T04:33:54.127337",
+      "email": "avi@gmail.com",
+      "id": "15931c81-ff01-4a91-8e82-5601f39d18ff",
+      "kcet_student_id": "VP0047",
+      "name": "avi",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-10-01T16:31:34.412705",
+      "email": "shrijasanillll28@gmail.com",
+      "id": "565bb868-8db6-4778-9075-b59ce5d82d7e",
+      "kcet_student_id": "VP0046",
+      "name": "shrija",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-10-01T14:42:53.431456",
+      "email": "yaska@gmail.com",
+      "id": "1258372e-0832-42d3-b3e1-356daac37ab6",
+      "kcet_student_id": "VP0045",
+      "name": "Yaska",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-09-27T08:09:30.934442",
+      "email": "ramprasann@gmail.com",
+      "id": "2f384bac-3a19-4ded-9153-77e46bd1984c",
+      "kcet_student_id": "VP0044",
+      "name": "Ram Prasanna",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-09-27T07:26:55.597967",
+      "email": "sannithnayak12@gmail.com",
+      "id": "94accc4e-b04a-4fae-942a-7222e2c9d18c",
+      "kcet_student_id": "VP0043",
+      "name": "Sannith",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-09-27T06:29:54.734089",
+      "email": "sinchanabhat923@gmail.com",
+      "id": "3e1b877c-72be-4d88-b1d6-3d8de67b5699",
+      "kcet_student_id": "VP0042",
+      "name": "Sinchana",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-09-27T06:14:46.368586",
+      "email": "incharabhat923@gmail.com",
+      "id": "4521aefb-9f7d-4184-b43f-24f99b7c9458",
+      "kcet_student_id": "VP0041",
+      "name": "Inchara Bhat",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-09-27T06:12:22.186001",
+      "email": "poorvikas@gmail.com",
+      "id": "3c8539cf-b5cf-4c9c-8a4f-045440a5c438",
+      "kcet_student_id": "VP0040",
+      "name": "Poorvi",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-09-27T06:07:34.377973",
+      "email": "shivani.23ad042@sode-edu.in",
+      "id": "313bbb00-7d18-44f6-95b2-fa3f59169667",
+      "kcet_student_id": "VP0039",
+      "name": "shivani",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-09-27T06:02:55.338145",
+      "email": "shrijasanil28@gmail.com",
+      "id": "af090b82-09a4-494c-8710-8b93bcedb9f3",
+      "kcet_student_id": "VP0038",
+      "name": "Shrija",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-09-25T18:12:55.204303",
+      "email": "devi@gmail.com",
+      "id": "a9d84ceb-df58-4549-bc31-d3e4241de4f2",
+      "kcet_student_id": "VP0037",
+      "name": "deviprasad",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-09-25T05:58:10.334054",
+      "email": "sanilll@gmail.com",
+      "id": "9e4e0bd2-975f-4626-91ad-ab1cc94a2df9",
+      "kcet_student_id": "VP0036",
+      "name": "sanil",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-09-25T05:51:23.454048",
+      "email": "veda@gmail.com",
+      "id": "4fee0f64-9a8b-4860-9271-68fd6985f1b7",
+      "kcet_student_id": "VP0035",
+      "name": "Veda",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-09-25T04:15:54.312703",
+      "email": "shainitha@gmail.com",
+      "id": "3ba1731b-5cc6-4cb6-944a-fda189cde3de",
+      "kcet_student_id": "VP0034",
+      "name": "Shainitha",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-09-24T16:31:11.804563",
+      "email": "shilpa@gmail.com",
+      "id": "c2dcf045-413d-40b6-86ed-259baca4c7ef",
+      "kcet_student_id": "VP0033",
+      "name": "shilpa",
+      "subscription_status": "expired"
+    },
+    {
+      "created_at": "2026-09-24T14:45:33.978541",
+      "email": "sumathi@gmail.com",
+      "id": "6efdc20e-5780-457e-9208-d55e2b7ae5fb",
+      "kcet_student_id": "VP0032",
+      "name": "sumathi",
+      "subscription_status": "active"
+    },
+    {
+      "created_at": "2026-09-24T08:31:43.632797",
+      "email": "vignesh@gmail.com",
+      "id": "dad54746-67c8-4e9c-87d6-9d9466ac6013",
+      "kcet_student_id": "VP0031",
+      "name": "vignesh",
+      "subscription_status": "active"
+    }
+  ],
+  "exams": {
+    "by_subject": {
+      "Biology": 17,
+      "Chemistry": 4,
+      "Mathematics": 14,
+      "Physics": 13
+    }
+  },
+  "generated_at": "2026-10-07T07:08:48.812674",
+  "institution_subscriptions": [
+    {
+      "institution_id": "61fff663-7d94-4c8d-91ab-5b3a6fa93188",
+      "institution_name": "Clg",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "aa2dcbd1-2612-4a82-b2bc-ee23c619dddf",
+      "institution_name": "Upload Validation 20261004",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "4603b4ae-b1df-4197-b96d-d25b6df89c3b",
+      "institution_name": "vidya",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "8e8fe154-ddf7-496c-abe0-71e5c39452f2",
+      "institution_name": "shilpa",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "97fde8fa-28bc-4e89-aefa-aa4029b8eb84",
+      "institution_name": "Vidyavardaka",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "6a9a4560-73d1-4b27-86bf-393a13fb28c1",
+      "institution_name": "nsam",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "7cd20185-2f92-49a5-919e-094e6f490668",
+      "institution_name": "kjhadhfdksahdf",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "16da33dc-6348-4bb4-bb33-7c237414b005",
+      "institution_name": "Exm",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "7d051806-23a9-4e3c-89a8-53ee920a90ac",
+      "institution_name": "francis",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "0aa63c5f-1c79-4151-8c26-9b25caf3730d",
+      "institution_name": "Seetharama",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "b890b7b3-6459-416a-97f2-88ad434ab7ba",
+      "institution_name": "shamili",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "52a58866-9a7b-4e48-9a26-1d7ef7d65746",
+      "institution_name": "Test Inst A",
+      "institution_status": "inactive",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "d29d5ca0-aaae-4205-a038-35ae0ad378ed",
+      "institution_name": "Test Inst B",
+      "institution_status": "inactive",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "b35a9396-a77f-42ba-8ac2-8415aea6973d",
+      "institution_name": "mit",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "408af64b-a429-4af0-a3be-9d4e4ded600a",
+      "institution_name": "mit",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "d5cbb15a-f67b-4426-865c-b861115e17e6",
+      "institution_name": "PermTestInst_1789957097",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "bb4a84ab-0407-4a59-a349-60bff2346d96",
+      "institution_name": "PermTestInst_1789957041",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "8d8729bc-f928-4ec0-867b-872cfb508ec9",
+      "institution_name": "TestInst_cba4",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "64725e35-c6c2-454c-9d74-f1ff4531c7ae",
+      "institution_name": "TestInst_49c8",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "743b975e-2ee3-4af1-b568-0c5044582d07",
+      "institution_name": "smvitm",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "9fc04466-ceb5-4b38-baa5-42b94c7fcb92",
+      "institution_name": "mahe",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "57252780-bd0d-4de0-8c20-a0b621582186",
+      "institution_name": "smvit",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "5226e678-58c5-4a51-832a-1f658da152bd",
+      "institution_name": "mgm",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "c67a1d8f-8ef1-4e8b-b2fb-06ac87af0bea",
+      "institution_name": "NEET Plus Institute",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "2bcaef7e-1613-4736-af9c-120c2768b908",
+      "institution_name": "Engineering Coaching Centre",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    },
+    {
+      "institution_id": "e4f5c677-83de-4919-8b7f-c443759f56b0",
+      "institution_name": "KCET Academy",
+      "institution_status": "active",
+      "next_renewal_date": null,
+      "plan_name": "\u2014",
+      "price": null,
+      "subscription_status": "none"
+    }
+  ],
+  "overview": {
+    "active_institutions": 24,
+    "active_subscriptions": 7,
+    "admin_indexed_files": 3,
+    "admin_questions": 579,
+    "avg_score": 29.7,
+    "direct_students": 46,
+    "expired_subscriptions": 4,
+    "institution_indexed_files": 208,
+    "institution_linked_students": 56,
+    "institution_questions": 5928,
+    "overdue_subscriptions": 0,
+    "published_exams": 47,
+    "total_exam_attempts": 70,
+    "total_exams": 48,
+    "total_institutions": 26,
+    "total_questions": 6507,
+    "total_students": 102
+  },
+  "question_bank": {
+    "admin_by_subject": {
+      "Biology": 323,
+      "Mathematics": 6,
+      "Physics": 250
+    },
+    "institution_by_institution": [
+      {
+        "count": 3503,
+        "name": "mgm"
+      },
+      {
+        "count": 1214,
+        "name": "mahe"
+      },
+      {
+        "count": 479,
+        "name": "smvit"
+      },
+      {
+        "count": 363,
+        "name": "mit"
+      },
+      {
+        "count": 182,
+        "name": "smvitm"
+      },
+      {
+        "count": 150,
+        "name": "shamili"
+      },
+      {
+        "count": 25,
+        "name": "francis"
+      },
+      {
+        "count": 5,
+        "name": "Upload Validation 20261004"
+      },
+      {
+        "count": 5,
+        "name": "shilpa"
+      },
+      {
+        "count": 1,
+        "name": "Test Inst A"
+      }
+    ]
+  },
+  "recent_activity": [
+    {
+      "badge": "Exam",
+      "badge_color": "blue",
+      "id": "0b7428d7-6c39-4355-8589-af2ad08cddda",
+      "subtitle": "Score: 3.33% (0m 21s)",
+      "timestamp": "2026-10-06T15:09:59.429642",
+      "title": "vignesh completed KCET Mathematics Mock Exam #14",
+      "type": "exam_submission"
+    },
+    {
+      "badge": "Student",
+      "badge_color": "purple",
+      "id": "fafd2028-d8c4-4480-9898-f8bf1988454d",
+      "subtitle": "ID: VP0050 \u2022 rakesh@gmail.com",
+      "timestamp": "2026-10-05T16:02:10.071813",
+      "title": "Student registered: rakesh",
+      "type": "user_registration"
+    },
+    {
+      "badge": "Exam",
+      "badge_color": "blue",
+      "id": "409f0479-1a22-4f7f-babc-3ffdd637a981",
+      "subtitle": "Score: 28.33% (2m 2s)",
+      "timestamp": "2026-10-04T23:58:38.086362",
+      "title": "sumana completed Biology Live Trace Exam Direct",
+      "type": "exam_submission"
+    },
+    {
+      "badge": "Exam",
+      "badge_color": "blue",
+      "id": "bcdcb97a-1546-4832-b9da-c991c80fbbc8",
+      "subtitle": "Score: 25.0% (1m 46s)",
+      "timestamp": "2026-10-04T13:26:47.256279",
+      "title": "sumana completed seetha1test",
+      "type": "exam_submission"
+    },
+    {
+      "badge": "Exam",
+      "badge_color": "blue",
+      "id": "f2ece0cb-6e03-4c1f-975e-7ebe66c47b7c",
+      "subtitle": "Score: 1.67% (0m 19s)",
+      "timestamp": "2026-10-04T12:34:15.439193",
+      "title": "sumana completed seetha2test",
+      "type": "exam_submission"
+    },
+    {
+      "badge": "Student",
+      "badge_color": "purple",
+      "id": "e4832b5b-36e7-4277-9345-f80ed77c1969",
+      "subtitle": "ID: smvitm0005 \u2022 sumana1@gmail.com",
+      "timestamp": "2026-10-04T12:30:52.904974",
+      "title": "Student registered: sumana",
+      "type": "user_registration"
+    },
+    {
+      "badge": "Exam",
+      "badge_color": "blue",
+      "id": "50c2c930-86bb-42b9-a5a1-fc951a881096",
+      "subtitle": "Score: 0.0% (0m 6s)",
+      "timestamp": "2026-10-03T16:10:13.105885",
+      "title": "sumana completed Platform Admin Exam",
+      "type": "exam_submission"
+    },
+    {
+      "badge": "Exam",
+      "badge_color": "blue",
+      "id": "b8bf256f-3977-4c44-9ca3-32328708e98e",
+      "subtitle": "Score: 3.33% (0m 25s)",
+      "timestamp": "2026-10-03T14:45:15.606441",
+      "title": "sumana completed ia",
+      "type": "exam_submission"
+    },
+    {
+      "badge": "Student",
+      "badge_color": "purple",
+      "id": "4850e70c-dd93-4673-af26-264b36cf159e",
+      "subtitle": "ID: VP0049 \u2022 sumana@gmail.com",
+      "timestamp": "2026-10-03T12:33:30.948353",
+      "title": "Student registered: sumana",
+      "type": "user_registration"
+    },
+    {
+      "badge": "Student",
+      "badge_color": "purple",
+      "id": "d8e00365-eb4c-4f3f-9730-9b6e4194e118",
+      "subtitle": "ID: VP0048 \u2022 seetha1@gmail.com",
+      "timestamp": "2026-10-03T08:11:15.906871",
+      "title": "Student registered: v seetharama",
+      "type": "user_registration"
+    }
+  ],
+  "recent_institutions": [
+    {
+      "id": "61fff663-7d94-4c8d-91ab-5b3a6fa93188",
+      "name": "Clg",
+      "registered_at": "2026-10-05T14:27:59.412836",
+      "status": "active"
+    },
+    {
+      "id": "aa2dcbd1-2612-4a82-b2bc-ee23c619dddf",
+      "name": "Upload Validation 20261004",
+      "registered_at": "2026-10-04T12:09:32.771985",
+      "status": "active"
+    },
+    {
+      "id": "4603b4ae-b1df-4197-b96d-d25b6df89c3b",
+      "name": "vidya",
+      "registered_at": "2026-10-04T01:58:59.811411",
+      "status": "active"
+    },
+    {
+      "id": "8e8fe154-ddf7-496c-abe0-71e5c39452f2",
+      "name": "shilpa",
+      "registered_at": "2026-10-03T16:43:09.051884",
+      "status": "active"
+    },
+    {
+      "id": "97fde8fa-28bc-4e89-aefa-aa4029b8eb84",
+      "name": "Vidyavardaka",
+      "registered_at": "2026-10-03T08:08:13.585691",
+      "status": "active"
+    }
+  ]
+}

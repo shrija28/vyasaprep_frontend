@@ -48,6 +48,22 @@ import StudentInstitutionExams from './pages/auto/StudentInstitutionExams';
 import StudentInstitutionLeaderboard from './pages/auto/StudentInstitutionLeaderboard';
 import Syllabus from './pages/auto/Syllabus';
 
+// ---------------------------------------------------------------------------
+// Role normalisation
+// Converts any backend role/user_type value into one of the canonical strings:
+//   'platform_admin' | 'institution_admin' | 'student' | <raw>
+// ---------------------------------------------------------------------------
+const resolveRole = (user) => {
+  const raw = String(user?.role || user?.user_type || user?.account_type || '')
+    .toLowerCase()
+    .trim();
+  // Accept both "admin" (legacy shorthand) and "platform_admin"
+  if (raw === 'admin' || raw === 'platform_admin') return 'platform_admin';
+  if (raw === 'institution' || raw === 'institution_admin') return 'institution_admin';
+  if (raw === 'student') return 'student';
+  return raw; // pass through unknown values so they surface in routing logic
+};
+
 // Public Layout Wrapper
 const PublicLayout = ({ children }) => (
   <>
@@ -56,44 +72,105 @@ const PublicLayout = ({ children }) => (
   </>
 );
 
-const InstitutionRouteGuard = () => {
-  const { user, loading } = React.useContext(AuthContext);
-  if (loading) return <div className="route-loading" role="status">Checking institution access...</div>;
+// ---------------------------------------------------------------------------
+// Route Guards
+// ---------------------------------------------------------------------------
 
-  const role = String(user?.role || user?.user_type || user?.account_type || '').toLowerCase();
-  if (!user || !['institution', 'institution_admin'].includes(role)) {
-    return <Navigate to="/login" replace state={{ from: '/institution/dashboard' }} />;
-  }
-
-  return <InstitutionLayout />;
-};
-
+/**
+ * Protects /admin/* routes.
+ * - platform_admin  → render AdminLayout
+ * - institution_admin → redirect to /institution/dashboard
+ * - unauthenticated → redirect to /login
+ * - student / other → redirect to appropriate student dashboard
+ */
 const AdminRouteGuard = () => {
   const { user, loading } = React.useContext(AuthContext);
   const location = useLocation();
+
   if (loading) return <div className="route-loading" role="status">Checking admin access...</div>;
 
   if (!user) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
-  const role = String(user.role || user.user_type || user.account_type || '').toLowerCase();
-  if (role === 'admin') return <AdminLayout />;
-  if (['institution', 'institution_admin'].includes(role)) {
+  const role = resolveRole(user);
+
+  if (role === 'platform_admin') return <AdminLayout />;
+
+  if (role === 'institution_admin') {
     return <Navigate to="/institution/dashboard" replace />;
   }
 
+  // Student or unknown — redirect away from admin routes
   const accountTypes = [user.student_subtype, user.account_type, user.user_type]
     .map((value) => String(value || '').toLowerCase());
-  const isInstitutionStudent = accountTypes.some((type) =>
-    ['institutional', 'institution_student', 'institution', 'institution_linked'].includes(type)
-  ) || Boolean(
-    user.institution_id || user.institution?.id || user.institution_name || user.institution?.name ||
-    user.student?.institution_id || user.student?.institution_name
-  );
+  const isInstitutionStudent =
+    accountTypes.some((type) =>
+      ['institutional', 'institution_student', 'institution', 'institution_linked'].includes(type)
+    ) ||
+    Boolean(
+      user.institution_id ||
+      user.institution?.id ||
+      user.institution_name ||
+      user.institution?.name ||
+      user.student?.institution_id ||
+      user.student?.institution_name
+    );
 
   return <Navigate to={isInstitutionStudent ? '/student/institution/dashboard' : '/dashboard'} replace />;
 };
+
+/**
+ * Protects /institution/* routes.
+ * - institution_admin → render InstitutionLayout
+ * - anyone else → redirect to /login
+ */
+const InstitutionRouteGuard = () => {
+  const { user, loading } = React.useContext(AuthContext);
+
+  if (loading) return <div className="route-loading" role="status">Checking institution access...</div>;
+
+  const role = resolveRole(user);
+  if (!user || role !== 'institution_admin') {
+    return <Navigate to="/login" replace state={{ from: '/institution/dashboard' }} />;
+  }
+
+  return <InstitutionLayout />;
+};
+
+/**
+ * Protects student routes (/dashboard, /exam, /profile, etc.).
+ * - unauthenticated → redirect to /login
+ * - platform_admin → redirect to /admin/dashboard
+ * - institution_admin → redirect to /institution/dashboard
+ * - student (direct or institution-linked) → render StudentLayout
+ */
+const StudentRouteGuard = () => {
+  const { user, loading } = React.useContext(AuthContext);
+  const location = useLocation();
+
+  if (loading) return <div className="route-loading" role="status">Loading...</div>;
+
+  if (!user) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+
+  const role = resolveRole(user);
+
+  if (role === 'platform_admin') {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+  if (role === 'institution_admin') {
+    return <Navigate to="/institution/dashboard" replace />;
+  }
+
+  // Students (direct or institution-linked) are allowed through
+  return <StudentLayout />;
+};
+
+// ---------------------------------------------------------------------------
+// App
+// ---------------------------------------------------------------------------
 
 function App() {
   return (
@@ -114,21 +191,21 @@ function App() {
           <Route path="/config" element={<Config />} />
           <Route path="/invitation-accept" element={<PublicLayout><InvitationAccept /></PublicLayout>} />
 
-          {/* Student Routes */}
-          <Route element={<StudentLayout />}>
+          {/* Student Routes — protected by StudentRouteGuard */}
+          <Route element={<StudentRouteGuard />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<StudentProfile />} />
             <Route path="/exam" element={<Exam />} />
             <Route path="/subscription" element={<Navigate to="/dashboard" replace />} />
             <Route path="/syllabus" element={<Syllabus />} />
             <Route path="/student-pricing" element={<Navigate to="/dashboard" replace />} />
-            
-            {/* Institution Specific Student Routes */}
+
+            {/* Institution-specific student routes */}
             <Route path="/student-institution-dashboard" element={<Dashboard />} />
             <Route path="/student-institution-exams" element={<StudentInstitutionExams />} />
             <Route path="/student-institution-leaderboard" element={<StudentInstitutionLeaderboard />} />
             <Route path="/student-institution-performance" element={<Navigate to="/dashboard" replace />} />
-            
+
             <Route path="/student/institution" element={<Navigate to="/student/institution/dashboard" replace />} />
             <Route path="/student/institution/dashboard" element={<Dashboard />} />
             <Route path="/student/institution/exams" element={<StudentInstitutionExams />} />
@@ -136,7 +213,7 @@ function App() {
             <Route path="/student/institution/performance" element={<Navigate to="/dashboard" replace />} />
           </Route>
 
-          {/* Admin Routes */}
+          {/* Admin Routes — protected by AdminRouteGuard */}
           <Route path="/admin" element={<AdminRouteGuard />}>
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
@@ -152,7 +229,7 @@ function App() {
             <Route path="upload" element={<AdminUpload />} />
           </Route>
 
-          {/* Institution Routes */}
+          {/* Institution Routes — protected by InstitutionRouteGuard */}
           <Route path="/institution" element={<InstitutionRouteGuard />}>
             <Route index element={<Navigate to="/institution/dashboard" replace />} />
             <Route path="analytics" element={<InstitutionAnalytics />} />
