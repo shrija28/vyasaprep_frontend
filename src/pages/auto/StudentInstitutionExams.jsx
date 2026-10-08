@@ -372,7 +372,7 @@ const StudentInstitutionExams = () => {
                           className="btn-primary"
                           style={{ width: '100%', justifyContent: 'center', padding: '10px 16px', fontSize: '0.92rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                         >
-                          Take Set {exam.assigned_set_label || assignedSet.set_label} →
+                          Start Exam →
                         </Link>
                       ) : examState === 'retake' && assignedSet ? (
                         <Link
@@ -398,7 +398,7 @@ const StudentInstitutionExams = () => {
                           disabled
                           style={{ width: '100%', justifyContent: 'center', padding: '10px 16px', fontSize: '0.92rem', fontWeight: 700, cursor: 'not-allowed', opacity: 0.8, background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)' }}
                         >
-                          Completed
+                          Attempted
                         </button>
                       ) : (
                         <button

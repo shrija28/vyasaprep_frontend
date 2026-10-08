@@ -35,7 +35,11 @@ const RegisterPage = () => {
         password: password,
         role: "student",
         student_subtype: joinType === 'via_code' ? "institutional" : "independent",
-        institution_id: joinType === 'via_code' ? joinCode : null
+        institution_id: joinType === 'via_code' ? joinCode : null,
+        invite_code: joinType === 'via_code' ? joinCode : null,
+        institution_code: joinType === 'via_code' ? joinCode : null,
+        code: joinType === 'via_code' ? joinCode : null,
+        join_code: joinType === 'via_code' ? joinCode : null,
       };
 
       const res = await fetch('/api/auth/register', {

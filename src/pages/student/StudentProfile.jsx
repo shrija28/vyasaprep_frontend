@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { Link, useNavigate, useOutletContext } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 import { extractStudentName } from '../../utils/studentId';
+import { isInstitutionLinkedStudent } from '../../utils/studentExamAccess';
 
 const StudentProfile = () => {
   const navigate = useNavigate();
@@ -11,20 +12,17 @@ const StudentProfile = () => {
   const resolvedEmail = profile?.email || profile?.user?.email || profile?.user_email || profile?.student?.email || '';
   const resolvedStudentId = profile?.kcet_student_id || profile?.student_id || profile?.studentId ||
     (profile?.sub && !String(profile.sub).includes('@') ? profile.sub : '');
-  const resolvedInstitution = profile?.institution_name || profile?.institution?.name || '';
-  const accountType = [profile?.student_subtype, profile?.account_type, profile?.user_type]
-    .some((value) => ['institutional', 'institution_student', 'institution'].includes(String(value || '').toLowerCase())) ||
-    Boolean(resolvedInstitution || profile?.institution_id || profile?.institution?.id)
-    ? 'Institution Student'
-    : 'Direct Student';
-  const dashboardPath = accountType === 'Institution Student' ? '/student/institution/dashboard' : '/dashboard';
+  const resolvedInstitution = profile?.institution_name || profile?.institution?.name || profile?.user?.institution_name || '';
+  const isInstLinked = isInstitutionLinkedStudent(profile);
+  const accountType = isInstLinked ? 'Institution Student' : 'Direct Student';
+  const dashboardPath = isInstLinked ? '/student/institution/dashboard' : '/dashboard';
 
   const profileFields = profile ? [
     ...(extractStudentName(profile) !== 'Student' ? [['Name', extractStudentName(profile)]] : []),
     ...(resolvedStudentId ? [[profile?.kcet_student_id ? 'KCET Student ID' : 'Student ID', resolvedStudentId]] : []),
     ...(resolvedEmail ? [['Email', resolvedEmail]] : []),
     ['Account Type', accountType],
-    ...(resolvedInstitution ? [['Institution', resolvedInstitution]] : []),
+    ...(isInstLinked && resolvedInstitution ? [['Institution', resolvedInstitution]] : []),
   ] : [];
 
   const handleLogout = async () => {

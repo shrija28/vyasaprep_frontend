@@ -14,11 +14,18 @@ export const AuthProvider = ({ children }) => {
         if (token === 'http-only-cookie') {
           localStorage.removeItem('token');
         }
-        // Login may use an HTTP-only cookie, so the user profile must be
-        // restored independently of the optional local token.
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
           setUser(JSON.parse(storedUser));
+        }
+        // Fetch fresh user profile from backend /api/auth/me
+        const meRes = await fetch('/api/auth/me', { credentials: 'include' });
+        if (meRes.ok) {
+          const meData = await meRes.json();
+          if (meData && meData.authenticated !== false) {
+            localStorage.setItem('user', JSON.stringify(meData));
+            setUser(meData);
+          }
         }
       } catch (error) {
         console.error('Auth error', error);

@@ -860,46 +860,10 @@ const Exam = () => {
         }
       }
 
-      const mergedList = fetchedList;
-
-      // --- STRICT INSTITUTION EXAM VISIBILITY RULES ---
-      const isInstitutionalStudent = Boolean(
-        (student?.institutionName && !String(student.institutionName).toLowerCase().includes('guest')) ||
-        student?.institution_id ||
-        student?.student_subtype === 'institutional'
-      );
-      const studentInstName = String(student?.institutionName || student?.institution_name || '').toLowerCase().trim();
-      const studentInstId = String(student?.institution_id || student?.join_code || '').toLowerCase().trim();
-
-      const filteredList = mergedList.filter(ex => {
-        if (!ex) return false;
-
-        const isInstitutionCreated = Boolean(
-          ex.created_by_type === 'institution' ||
-          ex.created_by_institution === true ||
-          (ex.institution_id && ex.institution_id !== 'admin' && ex.institution_id !== 'system') ||
-          (ex.institution_name && !String(ex.institution_name).toLowerCase().includes('admin') && !String(ex.institution_name).toLowerCase().includes('system'))
-        );
-
-        if (isInstitutionCreated) {
-          // Rule 1: Exams created by an institution MUST NOT be visible to regular/independent students!
-          if (!isInstitutionalStudent) return false;
-
-          // Rule 2: Exams created by Institution A should ONLY be visible to students of Institution A!
-          const exInstId = String(ex.institution_id || '').toLowerCase().trim();
-          const exInstName = String(ex.institution_name || '').toLowerCase().trim();
-
-          const matchId = studentInstId && exInstId && (studentInstId === exInstId || studentInstId.includes(exInstId) || exInstId.includes(studentInstId));
-          const matchName = studentInstName && exInstName && (studentInstName === exInstName || studentInstName.includes(exInstName) || exInstName.includes(studentInstName));
-
-          return Boolean(matchId || matchName || (!exInstId && !exInstName));
-        }
-
-        // Public platform practice exams created by system/admin are visible to all students
-        return true;
-      });
-
-      const scopedSubjects = normalizeExamSubjects(filteredList);
+      // The backend /api/student/exams endpoint is the authoritative source for exam visibility.
+      // Do NOT filter out exams returned by backend.
+      const publishedList = fetchedList.filter(ex => ex && ex.is_published !== false);
+      const scopedSubjects = normalizeExamSubjects(publishedList);
       setPublishedSubjects(scopedSubjects);
 
     } catch (err) {
@@ -1658,9 +1622,9 @@ const Exam = () => {
                             color: '#10b981'
                           }}
                         >
-                          Completed
+                          Attempted
                         </button>
-                      ) : ['available', 'retake'].includes(examState) && defaultSet ? (
+                      ) : ['available', 'retake'].includes(examState) ? (
                         <button
                           type="button"
                           className="btn-primary"
@@ -1677,7 +1641,7 @@ const Exam = () => {
                             gap: '8px'
                           }}
                         >
-                          {examState === 'retake' ? 'Retake Exam →' : `Take Set ${exam.assigned_set_label || defaultSet.set_label} →`}
+                          {examState === 'retake' ? 'Retake Exam →' : 'Start Exam →'}
                         </button>
                       ) : (
                         <button

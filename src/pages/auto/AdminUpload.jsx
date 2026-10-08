@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import AdminPageHeader from '../../components/AdminPageHeader';
 import { TrashIcon } from '../../components/icons';
@@ -195,7 +195,7 @@ const AdminUpload = () => {
             </div>
             <div>
               <h2><span className="step-num">01</span> Upload Materials &amp; Question Papers</h2>
-              <p className="section-sub">Upload NCERT textbooks or previous year papers — RAG will extract and index question patterns</p>
+              <p className="section-sub">Upload NCERT textbooks or previous year papers â€” RAG will extract and index question patterns</p>
             </div>
           </div>
           <div className="section-body">
@@ -203,7 +203,7 @@ const AdminUpload = () => {
             <div style={{"marginBottom":"16px"}}>
               <label htmlFor="subjectSelect" style={{"display":"block","marginBottom":"6px","fontSize":"0.85rem","color":"var(--muted2)"}}>Subject <span style={{"color":"var(--red)"}}>*</span></label>
               <select id="subjectSelect" className="text-input" required value={subject} onChange={(e) => setSubject(e.target.value)}>
-                <option value="" disabled>Select a subject…</option>
+                <option value="" disabled>Select a subjectâ€¦</option>
                 <option value="Biology">Biology</option>
                 <option value="Physics">Physics</option>
                 <option value="Chemistry">Chemistry</option>
@@ -422,7 +422,7 @@ const AdminUpload = () => {
               </div>
               <div className="output-header-actions">
                 <span style={{ fontSize: '0.88rem', color: 'var(--muted)', background: 'var(--card-bg)', padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border)' }}>
-                  4 Sets · {generatedSets[0]?.length || 60} Questions per Set
+                  4 Sets Â· {generatedSets[0]?.length || 60} Questions per Set
                 </span>
               </div>
             </div>
@@ -439,7 +439,7 @@ const AdminUpload = () => {
             <div className="paper-preview-card section-card" style={{ padding: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '16px', marginBottom: '20px' }}>
                 <div>
-                  <h3 style={{ margin: 0, color: 'var(--blue)' }}>Karnataka CET {subject} — Set {String.fromCharCode(65 + activeTab)}</h3>
+                  <h3 style={{ margin: 0, color: 'var(--blue)' }}>Karnataka CET {subject} â€” Set {String.fromCharCode(65 + activeTab)}</h3>
                   <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{activeQuestions.length} distinct questions exclusively for Set {String.fromCharCode(65 + activeTab)}</span>
                 </div>
                 <span style={{ fontSize: '0.85rem', color: '#666', background: 'rgba(0,0,0,0.05)', padding: '6px 12px', borderRadius: '4px', fontWeight: 500 }}>
@@ -506,3 +506,4 @@ const AdminUpload = () => {
 };
 
 export default AdminUpload;
+

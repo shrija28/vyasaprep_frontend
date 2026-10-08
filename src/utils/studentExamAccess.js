@@ -36,8 +36,19 @@ export const getStudentExamState = (exam, now = Date.now()) => {
   if (!exam) return 'unavailable';
 
   const attemptsUsed = Number(exam.attempts_used);
-  const attempted = exam.attempted === true || attemptsUsed > 0 || Boolean(exam.submission_id);
-  const canAttempt = exam.can_attempt === true;
+  const statusStr = String(exam.status || '').toLowerCase();
+  const attempted =
+    exam.attempted === true ||
+    exam.already_attempted === true ||
+    exam.is_attempted === true ||
+    ['attempted', 'already_attempted', 'completed', 'submitted'].includes(statusStr) ||
+    attemptsUsed > 0 ||
+    Boolean(exam.submission_id);
+
+  const canAttempt =
+    exam.can_attempt === true ||
+    (exam.can_attempt !== false && !attempted);
+
   const startsAt = exam.scheduled_start ? Date.parse(exam.scheduled_start) : NaN;
   const endsAt = exam.scheduled_end ? Date.parse(exam.scheduled_end) : NaN;
 
